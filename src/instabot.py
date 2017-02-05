@@ -296,7 +296,7 @@ class InstaBot:
 							else: 
 								break
 
-				self.day_counters['unfollow'] = self.day_counters['follow']:
+				self.day_counters['unfollow'] = self.day_counters['follow']
 
 	def banned_sleep(self):
 		
@@ -537,6 +537,10 @@ class InstaBot:
 
 				self.clean_up(on_exit=True, statement='\nCleaning up...')
 				self.log_out()
+
+			except:
+
+				continue
 
 		exit('\nBye!\n')
 

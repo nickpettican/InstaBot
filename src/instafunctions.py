@@ -45,8 +45,9 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 		params = [param for param in tmp if enabled[param[0]]]
 
 		for param in params:
+			if param:
 	
-			bucket[mode][param[0]].update([i[param[1]] for i in data['posts'] if not user_id == i['user_id']
+				bucket[mode][param[0]].update([i[param[1]] for i in data['posts'] if not user_id == i['user_id']
 											if not any(i[param[1]] in n for n in bucket[mode]['done'][param[0]]) 
 											if not any(n in i['caption'] for n in tags_to_avoid)])
 
