@@ -1,0 +1,17 @@
+{
+	"username": "username",
+	"password": "password",
+	"friends": "input/friends.csv",
+	"tags": "input/tags.csv",
+	"tags_to_avoid": "input/tags_to_avoid.csv",
+	"like_news_feed": true,
+	"likes_in_day": 500,
+	"media_max_likes": 50,
+	"media_min_likes": 0,
+	"follow_in_day": 50,
+	"unfollow_in_day": 50,
+	"follow_time_hours": 6,
+	"comments_in_day": 0,
+	"bot_start_at": "07:00",
+	"bot_stop_at": "23:00"
+}
