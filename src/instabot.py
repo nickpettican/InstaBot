@@ -323,8 +323,6 @@ class InstaBot:
 			self.banned['400'] = 0
 			
 		self.console_log('Sleeping for %s minutes... '%(sleep_time/60))
-			
-		time.sleep(sleep_time)
 
 		self.next_operation = {
 			'like': self.next_operation['like'] + sleep_time,
@@ -332,6 +330,8 @@ class InstaBot:
 			'comment': self.next_operation['comment'] + sleep_time,
 			'like_feed': self.next_operation['like_feed'] + sleep_time
 		}
+
+		time.sleep(sleep_time)
 
 	# === END TIME OPERATIONS ===
 
