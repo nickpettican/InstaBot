@@ -60,13 +60,11 @@ def media_by_tag(pull, tag_url, tag, media_max_likes, media_min_likes):
 	result = {'posts': False, 'tag': tag}
 	
 	try:
-	
 		explore_site = pull.get(tag_url %(tag))
 		tree = etree.HTML(explore_site.text)
 		identifier = 'window._sharedData = '
 	
 		for a in tree.findall('.//script'):
-	
 			try:
 				if a.text.startswith(identifier):
 
@@ -94,7 +92,6 @@ def news_feed_media(pull, url, user_id):
 		identifier = 'window._sharedData = '
 		
 		for a in tree.findall('.//script'):
-
 			try:
 				if a.text.startswith(identifier):
 					nodes = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['FeedPage'][0]['feed']['media']['nodes']
@@ -104,12 +101,10 @@ def news_feed_media(pull, url, user_id):
 				continue
 
 		if nodes:
-
 			posts = []
 
 			for n in nodes:
 				if not n['owner']['id'] == user_id:
-
 					try:
 						post = {'user_id': n['owner']['id'], 
 								'username': n['owner']['username'], 
@@ -118,11 +113,9 @@ def news_feed_media(pull, url, user_id):
 								'media_id': n['id'], 
 								'user_fullname': n['owner']['full_name']}
 						posts.append(post)
+
 					except:
 						continue
-
-		#for p in posts:
-		#	print json.dumps(p, indent=4)
 
 	except:
 		print '\nERROR getting news feed media.'
@@ -138,8 +131,7 @@ def check_user(pull, url, user):
 		'username': '', 'user_id': '', 'media': '', 'follows': 0, 'followers': 0
 	}}
 
-	#try:
-	if True:
+	try:
 		site = pull.get(url %(user))
 		tree = etree.HTML(site.text)
 		identifier = 'window._sharedData = '
@@ -147,7 +139,6 @@ def check_user(pull, url, user):
 		data = False
 		
 		for a in tree.findall('.//script'):
-
 			try:
 				if a.text.startswith(identifier):
 					data = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['ProfilePage'][0]['user']
@@ -178,8 +169,8 @@ def check_user(pull, url, user):
 				'followers': data['followed_by']['count']
 			}
 
-	#except:
-	#	print '\nERROR getting user data.'
+	except:
+		print '\nERROR getting user data.'
 
 	time.sleep(2*random.random())
 	return result
@@ -203,7 +194,6 @@ def post_data(pull, url, identifier, comment):
 	result = {'response': False, 'identifier': identifier}
 
 	try:
-
 		if comment:
 			response = pull.post(url %(identifier), data= {'comment_text': comment})
 

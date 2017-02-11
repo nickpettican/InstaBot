@@ -20,8 +20,8 @@
 # ___ Choose your tags wisely or you may risk liking    ___
 # ___ and commenting on undesirable media or spam.      ___
 
-from lib.instabot import InstaBot
-from lib.instaprofile import InstaProfile
+from src.instabot import InstaBot
+from src.instaprofile import InstaProfile
 import json
 
 def parse_config(path):

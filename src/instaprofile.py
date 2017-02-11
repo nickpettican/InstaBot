@@ -95,6 +95,17 @@ class InstaProfile:
 		self.profile['follows'].append(data)
 		self.save_profile()
 
+	def update_user(self, data, op):
+
+		# --- updates current follower data ---
+
+		for i, node in enumerate(self.profile[op]):
+			if node['user_id'] == data['user_id']:
+				self.profile[op][i] = data
+				break
+
+		self.save_profile()
+
 	def profile_template(self):
 
 		# --- returns template of profile object ---
@@ -107,18 +118,6 @@ class InstaProfile:
 				'follows': 0,
 				'followers': 0
 			},
-			'followers': [{
-				'username': '',
-				'user_id': '',
-				'media': 0,
-				'follows': 0,
-				'followers': 0
-			}],
-			'follows': [{
-				'username': '',
-				'user_id': '',
-				'media': 0,
-				'follows': 0,
-				'followers': 0
-			}]
+			'followers': [],
+			'follows': []
 		}

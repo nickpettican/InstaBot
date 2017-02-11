@@ -154,9 +154,21 @@ class InstaBot:
 		# --- imports friend list so that the bot likes their new media ---
 
 		try:
-			self.cache['friends'] = [line.strip() for line in open(self.params['friends'], 'r')]
+			if type(self.params['friends']) is list:
+				self.cache['friends'] = self.params['friends']
+			else:	
+				self.cache['friends'] = [line.strip() for line in open(self.params['friends'], 'r')]
+			
+			if type(self.params['tags']) is list:
+				self.cache['tags'] = self.params['tags']
+			else:
 			self.cache['tags'] = [line.strip() for line in open(self.params['tags'], 'r')]
-			self.cache['tags_to_avoid'] = [line.strip() for line in open(self.params['tags_to_avoid'], 'r')]
+			
+			if type(self.params['tags_to_avoid']) is list:
+				self.cache['tags_to_avoid'] = self.params['tags_to_avoid']
+			else:
+				self.cache['tags_to_avoid'] = [line.strip() for line in open(self.params['tags_to_avoid'], 'r')]
+	
 			self.cache['unfollow'] = False
 
 		except:
@@ -231,6 +243,7 @@ class InstaBot:
 			time_in_day_follow = self.params['time_in_day'] - self.params['follow_time']
 
 		self.delays = {
+
 			'all': return_random_sequence(self.params['total_operations'] + self.params['time_in_day']/60/60, self.params['time_in_day']), 
 			'like': return_random_sequence(self.params['likes_in_day'], self.params['time_in_day']), 
 			'follow': return_random_sequence(self.params['follow_in_day'], time_in_day_follow), 
@@ -244,9 +257,9 @@ class InstaBot:
 		# --- creates the times for the day ---
 
 		if not self.run_all_day:
-		
 			if float(self.params['bot_stop_at'].replace(':', '.')) - float(self.params['bot_start_at'].replace(':', '.')) < 0:
 				self.params['bot_stop_at'] = str(float(self.params['bot_stop_at'].replace(':', '.')) + 12).replace('.', ':')
+
 			self.times = {	
 					'start_bot': arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_start_at']).replace('.', ':')).timestamp, 
 					'stop_bot': arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_stop_at']).replace('.', ':')).timestamp
@@ -257,6 +270,7 @@ class InstaBot:
 		# --- set the operation times to iterate ---
 		
 		self.next_operation = {	
+
 			'like': arrow.now().timestamp, 
 			'follow': arrow.now().timestamp, 
 			'comment': arrow.now().timestamp, 
@@ -265,6 +279,7 @@ class InstaBot:
 		}
 
 		self.max_operation = {	
+
 			'like': self.params['likes_in_day'], 
 			'follow': self.params['follow_in_day'], 
 			'comment': self.params['comments_in_day'], 
@@ -278,11 +293,8 @@ class InstaBot:
 		# --- organises the operations for the day ---
 
 		if not self.run_all_day:
-				
 			if self.times['start_bot'] < arrow.now().timestamp < self.times['stop_bot']:
-				
 				for action, enabled in self.enabled.items():
-
 					if enabled:
 						tmp_time = self.times['start_bot']
 						
@@ -304,6 +316,7 @@ class InstaBot:
 		
 		if self.banned['400'] < 3:
 			sleep_time = 5*60
+
 		else:
 			sleep_time = 60*60
 			self.banned['banned'] = True
@@ -438,7 +451,6 @@ class InstaBot:
 
 		try:
 			if on_exit:
-
 				while len(self.bucket['explore']['unfollow']) > 0:
 
 					for user in sorted(self.bucket['explore']['unfollow'], key=itemgetter(1)):
@@ -456,7 +468,6 @@ class InstaBot:
 						time.sleep(random.randint(30, 60))
 
 			else:
-
 				while self.max_operation['unfollow'] > self.day_counters['unfollow']:
 
 					self.next_operation['unfollow'] = self.next_operation['unfollow'] + self.delays['unfollow'][self.day_counters['unfollow']]
@@ -487,9 +498,7 @@ class InstaBot:
 		# --- main ---
 
 		if self.cache['unfollow']:
-
 			if len(self.cache['unfollow']) >= 1:
-			
 				add = [self.bucket['explore']['unfollow'].add([user, i]) for i, user in enumerate(self.cache['unfollow'])]
 				self.clean_up(on_exit=True, statement='\nCleaning up last sessions follows...')
 
@@ -565,9 +574,7 @@ class InstaBot:
 				self.console_log("\nScrowling through feed for friend's posts...")
 				feed_data = news_feed_media(self.pull, self.insta_urls['domain'], self.profile.profile['user']['user_id'])
 				self.bucket = refill(self.profile.profile['user']['user_id'], feed_data, self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'feed')
-				self.organise_users(feed_data)
-
-			#print self.bucket
+				self.organise_profile(feed_data)
 
 		else:
 
@@ -643,7 +650,6 @@ class InstaBot:
 		# --- unfollows user ---
 
 		for user in self.bucket['explore']['unfollow']:
-			
 			if arrow.now().timestamp > user[1]:
 			
 				user_id = user[0]
@@ -798,7 +804,7 @@ class InstaBot:
 
 		return [True]
 
-	def organise_users(self, data):
+	def organise_profile(self, data):
 
 		# --- checks news feed for users and adds them to profile object ---
 
@@ -806,8 +812,8 @@ class InstaBot:
 
 		self.console_log('\nChecking the profiles of those you follow...')
 
-		user_ids = list(set([post['username'] for post in data]))
-		users_data = [check_user(self.pull, self.insta_urls['user'], user) for user in user_ids]
+		user_names = list(set([post['username'] for post in data]))
+		users_data = [check_user(self.pull, self.insta_urls['user'], user) for user in user_names]
 
 		for user in users_data:
 			if user['follower'] and not user['fake']:
@@ -816,6 +822,9 @@ class InstaBot:
 
 				if not any(user['data']['user_id'] == node['user_id'] for node in self.profile.profile['followers']):
 					self.profile.add_follower(user['data'])
+
+				else:
+					self.profile.update_user(user['data'], 'followers')
 
 				# --- remove from bucket if they are going to be unfollowed --- 
 				
@@ -838,8 +847,10 @@ class InstaBot:
 								response = post_data(self.pull, self.insta_urls['follow'], user['data']['user_id'], False)
 								if response['response'].ok:
 									self.console_log('followed back!')
+
 								else:
 									self.console_log('ERROR %s while following back' %(response['response'].status_code))
+							
 							except:
 								self.console_log('ERROR while following back')
 							break
@@ -853,6 +864,7 @@ class InstaBot:
 						response = self.explore_operation('unfollow', user_id)
 						if response[0]:
 							self.console_log('unfollowed!')
+						
 						else:
 							self.console_log('ERROR %s while unfollowing' %(response[1]))
 						break
@@ -862,6 +874,9 @@ class InstaBot:
 			if not any(user['data']['user_id'] == node['user_id'] for node in self.profile.profile['follows']):
 				self.console_log(' - %s will be added to follow list in profile' %(user['data']['username']))
 				self.profile.add_follow(user['data'])
+
+			else:
+				self.profile.update_user(user['data'], 'follows')
 		
 	# === END MAIN LOOP
 
