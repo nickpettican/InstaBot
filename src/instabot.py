@@ -26,8 +26,8 @@ from operator import itemgetter
 from datetime import datetime
 from sys import platform
 
-from lib.miscellaneous import *
-from lib.instafunctions import *
+from src.miscellaneous import *
+from src.instafunctions import *
 
 # === INSTABOT ===
 
@@ -162,7 +162,7 @@ class InstaBot:
 			if type(self.params['tags']) is list:
 				self.cache['tags'] = self.params['tags']
 			else:
-			self.cache['tags'] = [line.strip() for line in open(self.params['tags'], 'r')]
+				self.cache['tags'] = [line.strip() for line in open(self.params['tags'], 'r')]
 			
 			if type(self.params['tags_to_avoid']) is list:
 				self.cache['tags_to_avoid'] = self.params['tags_to_avoid']
