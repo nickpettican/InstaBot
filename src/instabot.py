@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.0.0 by nickpettican           ___
+# ___        InstaBot V 1.0.1 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___
@@ -64,7 +64,7 @@ class InstaBot:
 		self.profile = profile
 
 		self.params['total_operations'] = data['likes_in_day'] + data['follow_in_day'] + data['unfollow_in_day'] + data['comments_in_day']
-		self.params['follow_time'] = data['follow_time_hours'] * 60*60
+		self.params['follow_time'] = data['follow_time_hours']*60*60
 		self.ERROR = {'mkdir': False, 'importing': False, 'cache': False}
 		self.op_tmp = {'like': False, 'comment': False}
 		self.banned = {'banned': False, '400': 0}
@@ -168,16 +168,16 @@ class InstaBot:
 				self.cache['tags_to_avoid'] = self.params['tags_to_avoid']
 			else:
 				self.cache['tags_to_avoid'] = [line.strip() for line in open(self.params['tags_to_avoid'], 'r')]
-	
-			self.cache['unfollow'] = False
 
 		except:
 			self.ERROR['importing'] = True
 			self.console_log('\nERROR importing cached lists.\n')
+		
+		self.cache['unfollow'] = False
 
 		try:
 			if os.path.isfile('cache/followlist.csv'):
-				self.cache['unfollow'] = [line.strip() for line in open('cache/followlist.csv', 'r')]
+				self.cache['unfollow'] = [line.strip().split(',') for line in open('cache/followlist.csv', 'r')]
 
 		except:
 			print 'ERROR importing cached follow list'
@@ -224,6 +224,12 @@ class InstaBot:
 
 	# === TIME OPERATIONS ===
 
+	def time_now(self):
+
+		# --- returns current timestamp ---
+
+		return float(arrow.now().timestamp)
+
 	def create_delays(self):
 
 		# --- creates the necessary times ---
@@ -238,18 +244,17 @@ class InstaBot:
 			
 			self.today_times()
 			
-			self.params['time_in_day'] = self.times['stop_bot'] - self.times['start_bot']
-			self.params['total_operations'] = self.params['total_operations'] + self.params['time_in_day']/60/60
+			self.params['time_in_day'] = int(self.times['stop_bot'] - self.times['start_bot'])
+			self.params['total_operations'] += self.params['time_in_day']/60/60
 			time_in_day_follow = self.params['time_in_day'] - self.params['follow_time']
 
 		self.delays = {
-
 			'all': return_random_sequence(self.params['total_operations'] + self.params['time_in_day']/60/60, self.params['time_in_day']), 
 			'like': return_random_sequence(self.params['likes_in_day'], self.params['time_in_day']), 
 			'follow': return_random_sequence(self.params['follow_in_day'], time_in_day_follow), 
 			'comment': return_random_sequence(self.params['comments_in_day'], self.params['time_in_day']), 
 			'unfollow': return_random_sequence(self.params['unfollow_in_day'], time_in_day_follow),
-			'like_feed': [60*60 for i in range(0, self.params['time_in_day']/60/60)]	
+			'like_feed': [60*60 for i in range(0, int(self.params['time_in_day']/60/60))]	
 		}
 
 	def today_times(self):
@@ -257,12 +262,12 @@ class InstaBot:
 		# --- creates the times for the day ---
 
 		if not self.run_all_day:
+		
 			if float(self.params['bot_stop_at'].replace(':', '.')) - float(self.params['bot_start_at'].replace(':', '.')) < 0:
 				self.params['bot_stop_at'] = str(float(self.params['bot_stop_at'].replace(':', '.')) + 12).replace('.', ':')
-
 			self.times = {	
-					'start_bot': arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_start_at']).replace('.', ':')).timestamp, 
-					'stop_bot': arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_stop_at']).replace('.', ':')).timestamp
+					'start_bot': float(arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_start_at']).replace('.', ':')).timestamp), 
+					'stop_bot': float(arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_stop_at']).replace('.', ':')).timestamp)
 			}
 
 	def set_operation_sequence(self):
@@ -271,11 +276,11 @@ class InstaBot:
 		
 		self.next_operation = {	
 
-			'like': arrow.now().timestamp, 
-			'follow': arrow.now().timestamp, 
-			'comment': arrow.now().timestamp, 
-			'unfollow': arrow.now().timestamp + self.params['follow_time'],
-			'like_feed': arrow.now().timestamp
+			'like': self.time_now(), 
+			'follow': self.time_now(), 
+			'comment': self.time_now(), 
+			'unfollow': self.time_now() + self.params['follow_time'],
+			'like_feed': self.time_now()
 		}
 
 		self.max_operation = {	
@@ -293,13 +298,13 @@ class InstaBot:
 		# --- organises the operations for the day ---
 
 		if not self.run_all_day:
-			if self.times['start_bot'] < arrow.now().timestamp < self.times['stop_bot']:
+			if self.times['start_bot'] < self.time_now() < self.times['stop_bot']:
+				
 				for action, enabled in self.enabled.items():
 					if enabled:
 						tmp_time = self.times['start_bot']
 						
-						while tmp_time < arrow.now().timestamp:
-						
+						while tmp_time < self.time_now():
 							if self.day_counters[action] < self.max_operation[action]:
 								tmp_time = tmp_time + self.delays[action][self.day_counters[action]]
 								self.day_counters[action] += 1
@@ -325,6 +330,7 @@ class InstaBot:
 		self.console_log('Sleeping for %s minutes... '%(sleep_time/60))
 
 		self.next_operation = {
+
 			'like': self.next_operation['like'] + sleep_time,
 			'follow': self.next_operation['follow'] + sleep_time,
 			'comment': self.next_operation['comment'] + sleep_time,
@@ -352,10 +358,12 @@ class InstaBot:
 		
 		self.pull = requests.Session()
 		self.pull.cookies.update({
+
 			'sessionid' : '', 'mid' : '', 'ig_pr' : '1', 'ig_vw' : '1920', 
 			'csrftoken' : '', 's_network' : '', 'ds_user_id' : ''
 		})
 		self.pull.headers.update({
+
 			'Accept-Encoding' : 'gzip, deflate',
 			'Accept-Language' : 'en-US;q=0.6,en;q=0.4',
 			'Connection' : 'keep-alive',
@@ -398,9 +406,11 @@ class InstaBot:
 					self.logged_in = True
 					self.console_log('successfully signed in!')
 					time.sleep(2)
+
 			else:
 				self.console_log('ERROR, could not sign in.')
 				exit('\nBye!\n')
+
 		except:
 			self.console_log('\nERROR while attempting sign in\n')
 			
@@ -452,24 +462,24 @@ class InstaBot:
 		try:
 			if on_exit:
 				while len(self.bucket['explore']['unfollow']) > 0:
-
 					for user in sorted(self.bucket['explore']['unfollow'], key=itemgetter(1)):
 
 						user_id = user[0]
-
-						self.console_log('\nTrying to unfollow %s... \,' %(user_id))
-
+						self.console_log('\n * Trying to unfollow %s... \,' %(user_id))
 						response = self.explore_operation('unfollow', user)
+						self.profile.remove_follow(user_id)
 
 						if not response[0]:
 							if response[1].status_code == 400:
 								self.banned_sleep()
 
-						time.sleep(random.randint(30, 60))
+						sleep_time = random.randint(30, 60)
+						print '\tWaiting %s seconds' %(sleep_time)
+						time.sleep(sleep_time)
 
 			else:
-				while self.max_operation['unfollow'] > self.day_counters['unfollow']:
 
+				while self.max_operation['unfollow'] > self.day_counters['unfollow']:
 					self.next_operation['unfollow'] = self.next_operation['unfollow'] + self.delays['unfollow'][self.day_counters['unfollow']]
 					self.day_counters['all'] += 1
 					self.day_counters['unfollow'] += 1
@@ -499,7 +509,7 @@ class InstaBot:
 
 		if self.cache['unfollow']:
 			if len(self.cache['unfollow']) >= 1:
-				add = [self.bucket['explore']['unfollow'].add([user, i]) for i, user in enumerate(self.cache['unfollow'])]
+				add = [self.bucket['explore']['unfollow'].append([user[0], i]) for i, user in enumerate(self.cache['unfollow'])]
 				self.clean_up(on_exit=True, statement='\nCleaning up last sessions follows...')
 
 		self.console_log('\nStarting operations - %s' %(arrow.now().format('HH:mm:ss DD/MM/YYYY')))
@@ -522,12 +532,12 @@ class InstaBot:
 
 				else:
 
-					while self.times['start_bot'] < arrow.now().timestamp < self.times['stop_bot']:
+					while self.times['start_bot'] < self.time_now() < self.times['stop_bot']:
 						self.main_loop()
 
 					self.clean_up(on_exit=False, statement='\nFinishing operations...')
 
-					while not self.times['start_bot'] < arrow.now().timestamp < self.times['stop_bot']:
+					while not self.times['start_bot'] < self.time_now() < self.times['stop_bot']:
 						time.sleep(60)
 
 			except ConnectionError:
@@ -547,8 +557,9 @@ class InstaBot:
 				self.clean_up(on_exit=True, statement='\nCleaning up...')
 				self.log_out()
 
-			except:
+			except Exception as e:
 
+				self.console_log('Error: %s' %(e))
 				continue
 
 		exit('\nBye!\n')
@@ -576,6 +587,8 @@ class InstaBot:
 				self.bucket = refill(self.profile.profile['user']['user_id'], feed_data, self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'feed')
 				self.organise_profile(feed_data)
 
+			#print self.bucket
+
 		else:
 
 			self.console_log("\nYou're not logged in!\n")
@@ -589,20 +602,19 @@ class InstaBot:
 		
 			if enabled:
 
-				if self.next_operation[operation] < arrow.now().timestamp and self.max_operation[operation] > self.day_counters[operation] \
+				if self.next_operation[operation] < self.time_now() and self.max_operation[operation] > self.day_counters[operation] \
 					and self.max_operation['all'] > self.day_counters['all']:
 
 					self.next_operation[operation] = self.next_operation[operation] + self.delays[operation][self.day_counters[operation]]
 					self.day_counters['all'] += 1
 					self.day_counters[operation] += 1
 
-					#response = [True, 0]
 					response = self.insta_operation(operation)
 					if not response[0]:
 						if response[1].status_code == 400:
 							self.banned_sleep()
 
-					print '\nWaiting %s seconds' %(self.delays['all'][self.day_counters['all']])
+					print '\tWaiting %s seconds' %(self.delays['all'][self.day_counters['all']])
 
 					time.sleep(self.delays['all'][self.day_counters['all']])
 
@@ -634,7 +646,7 @@ class InstaBot:
 
 		user_id = random.choice(list(self.bucket['explore']['follow']))
 
-		self.console_log('\nTrying to follow %s... \,' %(user_id))
+		self.console_log('\n * Trying to follow %s... \,' %(user_id))
 
 		if not any(user_id == user for user in self.profile.master_unfollow_list):
 
@@ -650,13 +662,18 @@ class InstaBot:
 		# --- unfollows user ---
 
 		for user in self.bucket['explore']['unfollow']:
-			if arrow.now().timestamp > user[1]:
+			
+			if self.time_now() > user[1]:
 			
 				user_id = user[0]
 
-				self.console_log('\nTrying to unfollow %s... \,' %(user_id))
+				self.console_log('\n * Trying to unfollow %s... \,' %(user_id))
+
+				self.profile.remove_follow(user_id)
 
 				return self.explore_operation('unfollow', user)
+
+		return [True]
 
 	def like_media(self, media):
 
@@ -668,12 +685,12 @@ class InstaBot:
 		else:
 			media_id = random.choice(list(self.bucket['explore']['like']))
 
-		self.console_log('\nTrying to like %s... \,' %(media_id))
+		self.console_log('\n * Trying to like %s... \,' %(media_id))
 
 		try:
 			response = self.explore_operation('like', media_id)
 
-			if self.enabled['comment'] and arrow.now().timestamp > self.next_operation['comment'] \
+			if self.enabled['comment'] and self.time_now() > self.next_operation['comment'] \
 					and self.max_operation['comment'] > self.day_counters['comment']:
 
 				self.next_operation['comment'] = self.next_operation['comment'] + self.delays['comment'][self.day_counters['comment']]
@@ -700,7 +717,7 @@ class InstaBot:
 		else:
 			media_id = random.choice(list(self.bucket['explore']['like']))
 
-		self.console_log('\nTrying to comment %s... \,' %(media_id))
+		self.console_log('\n * Trying to comment %s... \,' %(media_id))
 
 		try:
 			response = self.explore_operation('comment', media_id)
@@ -751,7 +768,7 @@ class InstaBot:
 					self.bucket['explore']['done'][operation].append(identifier)
 				
 				if operation == 'follow':
-					self.bucket['explore']['unfollow'].append([identifier, arrow.now().timestamp + self.params['follow_time']])
+					self.bucket['explore']['unfollow'].append([identifier, self.time_now() + self.params['follow_time']])
 
 			elif response['response'].status_code == 400:
 				self.console_log('ERROR 400 - failed')
@@ -810,7 +827,7 @@ class InstaBot:
 
 		#print json.dumps(self.profile.profile, indent=3)
 
-		self.console_log('\nChecking the profiles of those you follow...')
+		self.console_log('Checking the profiles of those you follow...')
 
 		user_names = list(set([post['username'] for post in data]))
 		users_data = [check_user(self.pull, self.insta_urls['user'], user) for user in user_names]

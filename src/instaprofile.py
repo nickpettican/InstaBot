@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.0.0 by nickpettican           ___
+# ___        InstaBot V 1.0.1 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___
@@ -95,6 +95,15 @@ class InstaProfile:
 		self.profile['follows'].append(data)
 		self.save_profile()
 
+	def remove_follow(self, user_id):
+
+		# --- removes follow from follows list ---
+
+		for i, node in enumerate(self.profile['follows']):
+			if node['user_id'] == user_id:
+				del self.profile['follows'][i]
+				break
+
 	def update_user(self, data, op):
 
 		# --- updates current follower data ---
@@ -105,7 +114,7 @@ class InstaProfile:
 				break
 
 		self.save_profile()
-
+		
 	def profile_template(self):
 
 		# --- returns template of profile object ---
