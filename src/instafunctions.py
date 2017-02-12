@@ -30,9 +30,10 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 	# --- refill the bucket - returns dict with ---
 
 	if mode == 'feed' and data:
-	
+		for i in data:
+			bucket['codes'][i['media_id']] = i['url_code']
+
 		if enabled['like_feed']:
-	
 			bucket['feed']['like'].extend([[i['media_id'], i['username'], i['user_fullname']] for i in data 
 											if any(n.lower() == i['username'].lower() for n in friends) 
 											if not user_id == i['user_id']
@@ -40,13 +41,13 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 											if not any(n in i['caption'] for n in tags_to_avoid)])
 	
 	if mode == 'explore' and data['posts']:
-
+		for i in data['posts']:
+			bucket['codes'][i['media_id']] = i['url_code']
 		tmp = [['like', 'media_id'], ['follow', 'user_id'], ['comment', 'media_id']]
 		params = [param for param in tmp if enabled[param[0]]]
 
 		for param in params:
 			if param:
-	
 				bucket[mode][param[0]].update([i[param[1]] for i in data['posts'] if not user_id == i['user_id']
 											if not any(i[param[1]] in n for n in bucket[mode]['done'][param[0]]) 
 											if not any(n in i['caption'] for n in tags_to_avoid)])
@@ -74,7 +75,7 @@ def media_by_tag(pull, tag_url, tag, media_max_likes, media_min_likes):
 				if a.text.startswith(identifier):
 
 					nodes = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['TagPage'][0]['tag']['media']['nodes']
-					result['posts'] = [{'user_id': n['owner']['id'], 'likes': n['likes']['count'], 'caption': n['caption'], 'media_id': n['id']} 
+					result['posts'] = [{'user_id': n['owner']['id'], 'likes': n['likes']['count'], 'caption': n['caption'], 'media_id': n['id'], 'url_code': n['code']} 
 										for n in nodes if media_min_likes <= n['likes']['count'] <= media_max_likes if not n['comments_disabled']]
 					break
 	
@@ -119,7 +120,8 @@ def news_feed_media(pull, url, user_id):
 								'likes': n['likes']['count'], 
 								'caption': n['caption'], 
 								'media_id': n['id'], 
-								'user_fullname': n['owner']['full_name']}
+								'user_fullname': n['owner']['full_name'], 
+								'url_code': n['code']}
 						posts.append(post)
 					except:
 						continue

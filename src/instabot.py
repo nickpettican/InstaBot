@@ -88,7 +88,8 @@ class InstaBot:
 			'feed':	{
 				'like': [], 
 				'done': []
-			}
+			},
+			'codes': {}
 		}
 
 		url = 'https://www.instagram.com/'
@@ -103,7 +104,8 @@ class InstaBot:
 			'unlike': url + 'web/likes/%s/unlike/', 
 			'comment': url + 'web/comments/%s/add/', 
 			'follow': url + 'web/friendships/%s/follow/', 
-			'unfollow': url + 'web/friendships/%s/unfollow/'
+			'unfollow': url + 'web/friendships/%s/unfollow/',
+			'media': url + 'p/%s/'
 		}
 
 		# --- counters ---
@@ -709,7 +711,7 @@ class InstaBot:
 		else:
 			media_id = random.choice(list(self.bucket['explore']['like']))
 
-		self.console_log('\n * Trying to like %s... \,' %(media_id))
+		self.console_log('\n * Trying to like %s... \,' %(self.insta_urls['media'] %(self.bucket['codes'][media_id])))
 
 		try:
 			response = self.explore_operation('like', media_id)
@@ -741,7 +743,7 @@ class InstaBot:
 		else:
 			media_id = random.choice(list(self.bucket['explore']['like']))
 
-		self.console_log('\n * Trying to comment %s... \,' %(media_id))
+		self.console_log('\n * Trying to comment %s... \,' %(self.insta_urls['media'] %(self.bucket['codes'][media_id])))
 
 		try:
 			response = self.explore_operation('comment', media_id)
@@ -826,7 +828,7 @@ class InstaBot:
 				liked = post_data(self.pull, self.insta_urls['like'], post_ids[i][0], False)
 					
 				if liked['response'].ok:
-					self.console_log(" - Liked %s's post %s" %(post_ids[i][2], post_ids[i][0]))
+					self.console_log(" * Liked %s's post %s" %(post_ids[i][2], self.insta_urls['media'] %(self.bucket['codes'][post_ids[i][0]])))
 					self.bucket['feed']['like'].remove(post_ids[i])
 					self.bucket['feed']['done'].append(post_ids[i])
 					
@@ -840,7 +842,7 @@ class InstaBot:
 			except:
 				continue
 
-			time.sleep(30*random.random())
+			time.sleep(10*random.random())
 
 		self.total_counters['like_feed'] += 1
 
