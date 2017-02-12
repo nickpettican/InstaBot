@@ -545,9 +545,13 @@ class InstaBot:
 						self.main_loop()
 
 					self.clean_up(on_exit=False, statement='\nFinishing operations...')
+					time.sleep(10)
 
 					while not self.times['start_bot'] < self.time_now() < self.times['stop_bot']:
 						time.sleep(60)
+
+					self.reset_day_counters()
+					self.starting_operations()
 
 			except ConnectionError:
 
