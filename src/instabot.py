@@ -125,8 +125,6 @@ class InstaBot:
 
 		self.init_profile()
 
-		#print json.dumps(self.day_counters, indent=3)
-
 	# === INITIAL OPERATIONS ===
 
 	def starting_operations(self):
@@ -276,12 +274,14 @@ class InstaBot:
 		
 		self.next_operation = {	
 
-			'like': self.time_now(), 
-			'follow': self.time_now(), 
-			'comment': self.time_now(), 
+			'like': self.time_now() + 30, 
+			'follow': self.time_now() + 60, 
+			'comment': self.time_now() + 30, 
 			'unfollow': self.time_now() + self.params['follow_time'],
 			'like_feed': self.time_now()
 		}
+
+		self.next_check_feed = self.time_now()
 
 		self.max_operation = {	
 
@@ -292,6 +292,12 @@ class InstaBot:
 			'like_feed': self.params['time_in_day']/60/60, 
 			'all': self.params['total_operations']
 		}
+
+	def reset_day_counters(self):
+
+		# --- resets the day counters ---
+
+		self.day_counters = {'all':0, 'like_feed': 0, 'like': 0, 'follow': 0, 'unfollow': 0, 'comment': 0}
 
 	def catch_up_operations(self):
 
@@ -327,15 +333,13 @@ class InstaBot:
 			self.banned['banned'] = True
 			self.banned['400'] = 0
 			
-		self.console_log('Sleeping for %s minutes... '%(sleep_time/60))
+		self.console_log('\tSleeping for %s minutes... '%(sleep_time/60))
 
-		self.next_operation = {
-
-			'like': self.next_operation['like'] + sleep_time,
-			'follow': self.next_operation['follow'] + sleep_time,
-			'comment': self.next_operation['comment'] + sleep_time,
-			'like_feed': self.next_operation['like_feed'] + sleep_time
-		}
+		self.next_operation['like'] += sleep_time
+		self.next_operation['follow'] += sleep_time
+		self.next_operation['comment'] += sleep_time
+		self.next_operation['like_feed'] += sleep_time
+		self.next_check_feed += sleep_time
 
 		time.sleep(sleep_time)
 
@@ -493,11 +497,14 @@ class InstaBot:
 					time.sleep(self.delays['unfollow'][self.day_counters['unfollow']])
 
 		except KeyboardInterrupt:
-
 			if len(self.bucket['explore']['unfollow']):
 				self.console_log('\nList of followers will be created and unfollowed when InstaBot is next started.')
 
 			self.log_out()
+
+		except Exception as e:
+			 self.console_log('Error: %s' %(e))
+			 self.log_out()
 
 	# === END REQUESTS OPERATIONS ===
 
@@ -514,13 +521,12 @@ class InstaBot:
 
 		self.console_log('\nStarting operations - %s' %(arrow.now().format('HH:mm:ss DD/MM/YYYY')))
 
-		dc = self.day_counters
-		self.console_log('\nCurrent daily count:\n - All operations: %s\n - Like news feed: %s\n - Likes: %s\n - Follows: %s\n - Unfollows: %s\n - Comments: %s' 
-							%(dc['all'], dc['like_feed'], dc['like'], dc['follow'], dc['unfollow'], dc['comment']))
-
 		time.sleep(2*random.random())
 
 		while True:
+			dc = self.day_counters
+			self.console_log('\nCurrent daily count:\n - All operations: %s\n - Like news feed: %s\n - Likes: %s\n - Follows: %s\n - Unfollows: %s\n - Comments: %s' 
+								%(dc['all'], dc['like_feed'], dc['like'], dc['follow'], dc['unfollow'], dc['comment']))
 
 			try:
 				if self.run_all_day:
@@ -528,6 +534,7 @@ class InstaBot:
 					while internet_connection():
 						self.main_loop()
 						if all(self.max_operation[op] == self.day_counters[op] for op in self.day_counters):
+							self.reset_day_counters()
 							self.starting_operations()
 
 				else:
@@ -543,13 +550,19 @@ class InstaBot:
 			except ConnectionError:
 
 				while not internet_connection():
-					time.sleep(60)
 					self.console_log('NO INTERNET - re-establish connection to continue')
+					time.sleep(60)
 
+				self.reset_day_counters()
 				self.starting_operations()
 				self.catch_up_operations()
 				self.init_requests()
 
+				continue
+
+			except Exception as e:
+
+				self.console_log('Error: %s' %(e))
 				continue
 
 			except KeyboardInterrupt:
@@ -557,55 +570,24 @@ class InstaBot:
 				self.clean_up(on_exit=True, statement='\nCleaning up...')
 				self.log_out()
 
-			except Exception as e:
-
-				self.console_log('Error: %s' %(e))
-				continue
-
 		exit('\nBye!\n')
 
 	def main_loop(self):
 
 		# --- main loop of operations ---
 
-		if self.logged_in:
-
-			# --- refill bucket ---
-
-			tag = random.choice(self.cache['tags'])
-			
-			if len(self.bucket['explore']['like']) < 5 or len(self.bucket['explore']['follow']) < 5:
-
-				self.console_log('\nRefilling bucket - looking for "%s" posts...' %(tag))
-				self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], tag, self.params['media_max_likes'], 
-							self.params['media_min_likes']), self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'explore')
-
-			if len(self.bucket['feed']['like']) < 10:
-
-				self.console_log("\nScrowling through feed for friend's posts...")
-				feed_data = news_feed_media(self.pull, self.insta_urls['domain'], self.profile.profile['user']['user_id'])
-				self.bucket = refill(self.profile.profile['user']['user_id'], feed_data, self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'feed')
-				self.organise_profile(feed_data)
-
-			#print self.bucket
-
-		else:
-
-			self.console_log("\nYou're not logged in!\n")
-			raise ConnectionError
+		self.refill_bucket()
 
 		# --- run operations ---
 
-		#print json.dumps(self.next_operation, indent=3)
-
 		for operation, enabled in self.enabled.items():
-		
+	
 			if enabled:
-
-				if self.next_operation[operation] < self.time_now() and self.max_operation[operation] > self.day_counters[operation] \
+				if self.next_operation[operation] < self.time_now() \
+					and self.max_operation[operation] > self.day_counters[operation] \
 					and self.max_operation['all'] > self.day_counters['all']:
 
-					self.next_operation[operation] = self.next_operation[operation] + self.delays[operation][self.day_counters[operation]]
+					self.next_operation[operation] += self.delays[operation][self.day_counters[operation]]
 					self.day_counters['all'] += 1
 					self.day_counters[operation] += 1
 
@@ -614,12 +596,54 @@ class InstaBot:
 						if response[1].status_code == 400:
 							self.banned_sleep()
 
-					print '\tWaiting %s seconds' %(self.delays['all'][self.day_counters['all']])
-
-					time.sleep(self.delays['all'][self.day_counters['all']])
+					minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
+					sleep_time = minim - self.time_now()
+					if sleep_time > 0:
+						print '\tWaiting %s seconds' %(sleep_time)
+						time.sleep(sleep_time)
 
 			if not internet_connection():
 				raise ConnectionError
+
+	def refill_bucket(self):
+
+		# --- refill bucket with media and user ids ---
+
+		if self.logged_in:
+			tag = random.choice(self.cache['tags'])
+			if (len(self.bucket['explore']['like']) < 5 and self.enabled['like']) or \
+				(len(self.bucket['explore']['follow']) < 5 and self.enabled['follow']):
+				self.console_log('\nRefilling bucket - looking for "%s" posts...' %(tag))
+				
+				try:
+					self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], tag, self.params['media_max_likes'], 
+								self.params['media_min_likes']), self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'explore')
+				
+				except Exception as e:
+					tag = random.choice(self.cache['tags'])
+					self.console_log('Error: %s. Trying again with %s...' %(e, tag))
+					self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], tag, self.params['media_max_likes'], 
+								self.params['media_min_likes']), self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'explore')
+				
+
+			if len(self.bucket['feed']['like']) < 5:
+				if self.time_now() > self.next_check_feed:
+					self.next_check_feed += 5*60
+					self.console_log("\nScrowling through feed for friend's posts...")
+
+					feed_data = news_feed_media(self.pull, self.insta_urls['domain'], self.profile.profile['user']['user_id'])
+					self.bucket = refill(self.profile.profile['user']['user_id'], feed_data, self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'feed')
+					self.organise_profile(feed_data)
+
+			minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
+			sleep_time = minim - self.time_now()
+			if sleep_time > 0:
+				print '\tWaiting %s seconds' %(sleep_time)
+				time.sleep(sleep_time)
+
+		else:
+			self.console_log("\nYou're not logged in!\n")
+			raise ConnectionError
 
 	def insta_operation(self, op):
 
@@ -744,6 +768,7 @@ class InstaBot:
 
 		try:
 			comment = False
+			result = [True]
 			
 			if operation == 'comment':
 				comment = generate_comment()
@@ -758,27 +783,27 @@ class InstaBot:
 			if response['response'].ok:
 				self.total_counters[operation] += 1
 				self.console_log('success')
-				
-				if not operation == 'unfollow':
-					self.bucket['explore'][operation].discard(identifier)
-					self.bucket['explore']['done'][operation].add(identifier)
-				
-				else:
-					self.bucket['explore'][operation].remove(identifier)
-					self.bucket['explore']['done'][operation].append(identifier)
-				
-				if operation == 'follow':
-					self.bucket['explore']['unfollow'].append([identifier, self.time_now() + self.params['follow_time']])
 
 			elif response['response'].status_code == 400:
 				self.console_log('ERROR 400 - failed')
 				self.banned['400'] += 1
-				return [False, response['response']]
+				result = [False, response['response']]
 
 			else:
 				self.console_log('ERROR %s - failed' %(response['response'].status_code))
+				
+			if not operation == 'unfollow':
+				self.bucket['explore'][operation].discard(identifier)
+				self.bucket['explore']['done'][operation].add(identifier)
+				
+			else:
+				self.bucket['explore'][operation].remove(identifier)
+				self.bucket['explore']['done'][operation].append(identifier)
+				
+			if operation == 'follow':
+				self.bucket['explore']['unfollow'].append([identifier, self.time_now() + self.params['follow_time']])
 
-			return [True]
+			return result
 
 		except:
 			print '\nERROR in explore operation - debugging needed.'

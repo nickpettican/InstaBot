@@ -39,7 +39,7 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 											if not any(n == i['media_id'] for n in bucket['feed']['done'])
 											if not any(n in i['caption'] for n in tags_to_avoid)])
 	
-	elif mode == 'explore' and data:
+	if mode == 'explore' and data['posts']:
 
 		tmp = [['like', 'media_id'], ['follow', 'user_id'], ['comment', 'media_id']]
 		params = [param for param in tmp if enabled[param[0]]]
@@ -51,6 +51,9 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 											if not any(i[param[1]] in n for n in bucket[mode]['done'][param[0]]) 
 											if not any(n in i['caption'] for n in tags_to_avoid)])
 
+	elif mode == 'explore' and not data['posts']:
+		raise Exception('No posts found')
+
 	return bucket
 
 def media_by_tag(pull, tag_url, tag, media_max_likes, media_min_likes):
@@ -60,17 +63,19 @@ def media_by_tag(pull, tag_url, tag, media_max_likes, media_min_likes):
 	result = {'posts': False, 'tag': tag}
 	
 	try:
+	
 		explore_site = pull.get(tag_url %(tag))
 		tree = etree.HTML(explore_site.text)
 		identifier = 'window._sharedData = '
 	
 		for a in tree.findall('.//script'):
+	
 			try:
 				if a.text.startswith(identifier):
 
 					nodes = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['TagPage'][0]['tag']['media']['nodes']
 					result['posts'] = [{'user_id': n['owner']['id'], 'likes': n['likes']['count'], 'caption': n['caption'], 'media_id': n['id']} 
-										for n in nodes if media_min_likes <= n['likes']['count'] <= media_max_likes]
+										for n in nodes if media_min_likes <= n['likes']['count'] <= media_max_likes if not n['comments_disabled']]
 					break
 	
 			except:
@@ -92,6 +97,7 @@ def news_feed_media(pull, url, user_id):
 		identifier = 'window._sharedData = '
 		
 		for a in tree.findall('.//script'):
+
 			try:
 				if a.text.startswith(identifier):
 					nodes = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['FeedPage'][0]['feed']['media']['nodes']
@@ -101,10 +107,12 @@ def news_feed_media(pull, url, user_id):
 				continue
 
 		if nodes:
+
 			posts = []
 
 			for n in nodes:
 				if not n['owner']['id'] == user_id:
+
 					try:
 						post = {'user_id': n['owner']['id'], 
 								'username': n['owner']['username'], 
@@ -113,7 +121,6 @@ def news_feed_media(pull, url, user_id):
 								'media_id': n['id'], 
 								'user_fullname': n['owner']['full_name']}
 						posts.append(post)
-
 					except:
 						continue
 
@@ -135,7 +142,6 @@ def check_user(pull, url, user):
 		site = pull.get(url %(user))
 		tree = etree.HTML(site.text)
 		identifier = 'window._sharedData = '
-
 		data = False
 		
 		for a in tree.findall('.//script'):
@@ -172,7 +178,7 @@ def check_user(pull, url, user):
 	except:
 		print '\nERROR getting user data.'
 
-	time.sleep(2*random.random())
+	time.sleep(5*random.random())
 	return result
 	
 def generate_comment():
@@ -194,6 +200,7 @@ def post_data(pull, url, identifier, comment):
 	result = {'response': False, 'identifier': identifier}
 
 	try:
+
 		if comment:
 			response = pull.post(url %(identifier), data= {'comment_text': comment})
 
