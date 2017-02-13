@@ -242,7 +242,8 @@ class InstaBot:
 		else:
 			self.run_all_day = False
 			
-			self.today_times()
+			self.times = self.today_times()
+			print self.times
 			
 			self.params['time_in_day'] = int(self.times['stop_bot'] - self.times['start_bot'])
 			self.params['total_operations'] += self.params['time_in_day']/60/60
@@ -265,9 +266,13 @@ class InstaBot:
 		
 			if float(self.params['bot_stop_at'].replace(':', '.')) - float(self.params['bot_start_at'].replace(':', '.')) < 0:
 				self.params['bot_stop_at'] = str(float(self.params['bot_stop_at'].replace(':', '.')) + 12).replace('.', ':')
-			self.times = {	
+			time_tomorrow = float(arrow.get(str(arrow.utcnow().replace(days=1)).split('T').pop(0) + 'T' + \
+							str(self.params['bot_start_at']).replace('.', ':')).timestamp)
+
+			return {	
 					'start_bot': float(arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_start_at']).replace('.', ':')).timestamp), 
-					'stop_bot': float(arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_stop_at']).replace('.', ':')).timestamp)
+					'stop_bot': float(arrow.get(arrow.now().format('YYYY-MM-DD') + 'T' + str(self.params['bot_stop_at']).replace('.', ':')).timestamp),
+					'tomorrow_start': time_tomorrow
 			}
 
 	def set_operation_sequence(self):
@@ -546,8 +551,9 @@ class InstaBot:
 
 					self.clean_up(on_exit=False, statement='\nFinishing operations...')
 					time.sleep(10)
+					self.console_log('Sleeping until %s' %(self.params['bot_start_at']))
 
-					while not self.times['start_bot'] < self.time_now() < self.times['stop_bot']:
+					while self.times['stop_bot'] < self.time_now() < self.times['tomorrow_start']:
 						time.sleep(60)
 
 					self.reset_day_counters()
