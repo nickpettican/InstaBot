@@ -243,7 +243,6 @@ class InstaBot:
 			self.run_all_day = False
 			
 			self.times = self.today_times()
-			print self.times
 			
 			self.params['time_in_day'] = int(self.times['stop_bot'] - self.times['start_bot'])
 			self.params['total_operations'] += self.params['time_in_day']/60/60
