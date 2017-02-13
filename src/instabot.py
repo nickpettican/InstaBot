@@ -610,7 +610,6 @@ class InstaBot:
 		# --- run operations ---
 
 		for operation, enabled in self.enabled.items():
-			print operation
 			if enabled:
 				if self.next_operation[operation] < self.time_now() \
 					and self.max_operation[operation] > self.day_counters[operation] \
