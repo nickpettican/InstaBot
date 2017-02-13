@@ -237,23 +237,18 @@ class InstaBot:
 		if self.params['bot_start_at'] == self.params['bot_stop_at']:
 			self.run_all_day = True
 			self.params['time_in_day'] = 24*60*60
-			time_in_day_follow = 24*60*60
 
 		else:
 			self.run_all_day = False
-			
 			self.times = self.today_times()
-			
 			self.params['time_in_day'] = int(self.times['stop_bot'] - self.times['start_bot'])
 			self.params['total_operations'] += self.params['time_in_day']/60/60
-			time_in_day_follow = self.params['time_in_day'] - self.params['follow_time']
 
-		self.delays = {
-			'all': return_random_sequence(self.params['total_operations'] + self.params['time_in_day']/60/60, self.params['time_in_day']), 
+		self.delays = { 
 			'like': return_random_sequence(self.params['likes_in_day'], self.params['time_in_day']), 
-			'follow': return_random_sequence(self.params['follow_in_day'], time_in_day_follow), 
+			'follow': return_random_sequence(self.params['follow_in_day'], self.params['time_in_day']), 
 			'comment': return_random_sequence(self.params['comments_in_day'], self.params['time_in_day']), 
-			'unfollow': return_random_sequence(self.params['unfollow_in_day'], time_in_day_follow),
+			'unfollow': return_random_sequence(self.params['unfollow_in_day'], self.params['time_in_day']),
 			'like_feed': [60*60 for i in range(0, int(self.params['time_in_day']/60/60))]	
 		}
 
@@ -280,12 +275,15 @@ class InstaBot:
 		
 		self.next_operation = {	
 
-			'like': self.time_now() + 30, 
+			'like': self.time_now() + 40, 
 			'follow': self.time_now() + 60, 
-			'comment': self.time_now() + 30, 
+			'comment': self.time_now() + 40, 
 			'unfollow': self.time_now() + self.params['follow_time'],
 			'like_feed': self.time_now()
 		}
+
+		if self.bucket['explore']['unfollow']:
+			self.next_operation['unfollow'] = min(i[1] for i in self.bucket['explore']['unfollow'])
 
 		self.next_check_feed = self.time_now()
 
@@ -437,6 +435,79 @@ class InstaBot:
 		except:
 			self.console_log('\nERROR while attempting logout')
 			
+		self.back_up()
+				
+		exit('\nThank you for using InstaBot!\n')
+
+	def clean_up(self, on_exit, statement):
+
+		# --- unfollows from list if user wants to log out or if day is over ---
+
+		self.console_log(statement)
+
+		try:
+			if on_exit:
+				while len(self.bucket['explore']['unfollow']) > 0:
+					for user in sorted(self.bucket['explore']['unfollow'], key=itemgetter(1)):
+
+						user_id = user[0]
+						self.console_log('\n * Trying to unfollow %s... \,' %(user_id))
+						
+						response = self.explore_operation('unfollow', user)
+
+						if not response[0]:
+							if response[1].status_code == 400:
+								self.banned_sleep()
+
+						if response[0]:
+							self.profile.remove_follow(user_id)
+							self.banned['400'] = 0
+
+						sleep_time = random.randint(30, 60)
+						print '\tWaiting %s seconds' %(sleep_time)
+						time.sleep(sleep_time)
+
+			else:
+
+				while self.max_operation['unfollow'] > self.day_counters['unfollow']:
+					self.next_operation['unfollow'] += self.delays['unfollow'][self.day_counters['unfollow']]
+					self.day_counters['all'] += 1
+					self.day_counters['unfollow'] += 1
+
+					response = self.insta_operation('unfollow')
+
+					if not response[0]:
+						if response[1].status_code == 400:
+							self.banned_sleep()
+
+					if response[0]:
+						self.banned['400'] = 0
+
+					if self.time_now() > self.times['tomorrow_start']:
+						break
+
+					time.sleep(self.delays['unfollow'][self.day_counters['unfollow']])
+
+		except KeyboardInterrupt:
+			if len(self.bucket['explore']['unfollow']):
+				self.console_log('\nList of followers will be created and unfollowed when InstaBot is next started.')
+
+			self.log_out()
+
+		except Exception as e:
+			 self.console_log('Error: %s' %(e))
+			 self.log_out()
+
+	# === END REQUESTS OPERATIONS ===
+
+	# === BACKUPS ===
+
+	def back_up(self):
+
+		# --- saves a back-up of follow lists ---
+
+		self.profile.save_unfollow_list()
+
 		if not self.ERROR['cache']:
 		
 		# --- saves activity log ---
@@ -459,60 +530,7 @@ class InstaBot:
 			except:
 				self.console_log('\nERROR while saving backup follow list.\n')
 
-		self.profile.save_unfollow_list()
-				
-		exit('\nThank you for using InstaBot!\n')
-
-	def clean_up(self, on_exit, statement):
-
-		# --- unfollows from list if user wants to log out or if day is over ---
-
-		self.console_log(statement)
-
-		try:
-			if on_exit:
-				while len(self.bucket['explore']['unfollow']) > 0:
-					for user in sorted(self.bucket['explore']['unfollow'], key=itemgetter(1)):
-
-						user_id = user[0]
-						self.console_log('\n * Trying to unfollow %s... \,' %(user_id))
-						response = self.explore_operation('unfollow', user)
-						self.profile.remove_follow(user_id)
-
-						if not response[0]:
-							if response[1].status_code == 400:
-								self.banned_sleep()
-
-						sleep_time = random.randint(30, 60)
-						print '\tWaiting %s seconds' %(sleep_time)
-						time.sleep(sleep_time)
-
-			else:
-
-				while self.max_operation['unfollow'] > self.day_counters['unfollow']:
-					self.next_operation['unfollow'] = self.next_operation['unfollow'] + self.delays['unfollow'][self.day_counters['unfollow']]
-					self.day_counters['all'] += 1
-					self.day_counters['unfollow'] += 1
-
-					response = self.insta_operation('unfollow')
-
-					if not response[0]:
-						if response[1].status_code == 400:
-							self.banned_sleep()
-
-					time.sleep(self.delays['unfollow'][self.day_counters['unfollow']])
-
-		except KeyboardInterrupt:
-			if len(self.bucket['explore']['unfollow']):
-				self.console_log('\nList of followers will be created and unfollowed when InstaBot is next started.')
-
-			self.log_out()
-
-		except Exception as e:
-			 self.console_log('Error: %s' %(e))
-			 self.log_out()
-
-	# === END REQUESTS OPERATIONS ===
+	# === END BACKUPS ===
 
 	# === MAIN LOOP ===
 
@@ -531,6 +549,7 @@ class InstaBot:
 
 		while True:
 			dc = self.day_counters
+			self.back_up()
 			self.console_log('\nCurrent daily count:\n - All operations: %s\n - Like news feed: %s\n - Likes: %s\n - Follows: %s\n - Unfollows: %s\n - Comments: %s' 
 								%(dc['all'], dc['like_feed'], dc['like'], dc['follow'], dc['unfollow'], dc['comment']))
 
@@ -539,27 +558,27 @@ class InstaBot:
 
 					while internet_connection():
 						self.main_loop()
-						if all(self.max_operation[op] == self.day_counters[op] for op in self.day_counters):
+						if all(self.max_operation[op] == self.day_counters[op] for op in self.day_counters 
+								if op != 'unfollow' if op != 'all'):
 							self.reset_day_counters()
 							self.starting_operations()
 
 				else:
-
 					while self.times['start_bot'] < self.time_now() < self.times['stop_bot']:
 						self.main_loop()
 
 					self.clean_up(on_exit=False, statement='\nFinishing operations...')
 					time.sleep(10)
-					self.console_log('Sleeping until %s' %(self.params['bot_start_at']))
+					self.console_log('\nSleeping until %s' %(self.params['bot_start_at']))
 
 					while self.times['stop_bot'] < self.time_now() < self.times['tomorrow_start']:
 						time.sleep(60)
 
-					self.reset_day_counters()
-					self.starting_operations()
+					if self.time_now() > self.times['tomorrow_start']:
+						self.reset_day_counters()
+						self.starting_operations()
 
 			except ConnectionError:
-
 				while not internet_connection():
 					self.console_log('NO INTERNET - re-establish connection to continue')
 					time.sleep(60)
@@ -577,7 +596,6 @@ class InstaBot:
 				continue
 
 			except KeyboardInterrupt:
-
 				self.clean_up(on_exit=True, statement='\nCleaning up...')
 				self.log_out()
 
@@ -592,7 +610,7 @@ class InstaBot:
 		# --- run operations ---
 
 		for operation, enabled in self.enabled.items():
-	
+			print operation
 			if enabled:
 				if self.next_operation[operation] < self.time_now() \
 					and self.max_operation[operation] > self.day_counters[operation] \
@@ -603,9 +621,13 @@ class InstaBot:
 					self.day_counters[operation] += 1
 
 					response = self.insta_operation(operation)
+					
 					if not response[0]:
 						if response[1].status_code == 400:
 							self.banned_sleep()
+
+					if response[0]:
+						self.banned['400'] = 0
 
 					minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
 					sleep_time = minim - self.time_now()
@@ -613,8 +635,8 @@ class InstaBot:
 						print '\tWaiting %s seconds' %(sleep_time)
 						time.sleep(sleep_time)
 
-			if not internet_connection():
-				raise ConnectionError
+		if not internet_connection():
+			raise ConnectionError
 
 	def refill_bucket(self):
 
@@ -740,7 +762,7 @@ class InstaBot:
 			return response
 
 		except:
-			print '\nERROR while liking - debugging needed.'
+			raise Exception('while liking - debugging needed.')
 
 	def comment_media(self, media):
 
@@ -771,7 +793,7 @@ class InstaBot:
 			return response
 
 		except:
-			print '\nERROR while commenting - debugging needed.'
+			raise Exception('while commenting - debugging needed.')
 
 	def explore_operation(self, operation, identifier):
 
@@ -817,7 +839,7 @@ class InstaBot:
 			return result
 
 		except:
-			print '\nERROR in explore operation - debugging needed.'
+			raise Exception('in explore operation - debugging needed.')
 
 	def like_feed(self):
 
