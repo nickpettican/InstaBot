@@ -9,7 +9,7 @@
 	"media_max_likes": 50,
 	"media_min_likes": 0,
 	"follow_in_day": 50,
-	"unfollow_in_day": 50,
+	"unfollow": true,
 	"follow_time_hours": 6,
 	"comments_in_day": 0,
 	"bot_start_at": "07:00",

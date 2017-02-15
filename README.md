@@ -41,7 +41,7 @@ Once that's done, open the `config` file and insert your credentials and prefere
 |	media_max_likes		|	50 						|	Maximum number of likes a post will have for InstaBot to like it 		|
 |	media_min_likes		|	0	 					|	Minimum number of likes a post will have for InstaBot to like it 		|
 |	follow_in_day		|	50						|	Number of users it will follow per day 							 		|
-|	unfollow_in_day		|	50						|	Number of users it will unfollow per day 								|
+|	unfollow 			|	true					|	`true` or `false` whether you want to unfollow users					|
 |	follow_time_hours	|	6			 			|	Time (in hours) it will follow these users for 				 			|
 |	comments_in_day		|	0						|	Number of comments it will leave per day								|
 |	bot_start_at 		|	07:00 					|	Time when InstaBot will start 											|

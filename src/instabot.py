@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.0.1 by nickpettican           ___
+# ___        InstaBot V 1.0.2 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___
@@ -46,14 +46,14 @@ class InstaBot:
 		'media_max_likes': 50, 
 		'media_min_likes': 0, 
 		'follow_in_day': 0, 
-		'unfollow_in_day': 0,
+		'unfollow': True,
 		'follow_time_hours': 5, 
 		'comments_in_day': 0, 
 		'bot_start_at': '07:00', 
 		'bot_stop_at': '23:00'
 	}):
 
-		self.header = '\n--- InstaBot V 1.0.1 by nickpettican ---\
+		self.header = '\n--- InstaBot V 1.0.2 by nickpettican ---\
 					   \n--- Automate your Instagram activity ---\n'
 
 		self.console_log('START')
@@ -63,7 +63,11 @@ class InstaBot:
 		self.params = data
 		self.profile = profile
 
-		self.params['total_operations'] = data['likes_in_day'] + data['follow_in_day'] + data['unfollow_in_day'] + data['comments_in_day']
+		if data['unfollow']:
+			self.params['total_operations'] = data['likes_in_day'] + data['follow_in_day']*2 + data['comments_in_day']
+		else:
+			self.params['total_operations'] = data['likes_in_day'] + data['follow_in_day'] + data['comments_in_day']
+
 		self.params['follow_time'] = data['follow_time_hours']*60*60
 		self.ERROR = {'mkdir': False, 'importing': False, 'cache': False}
 		self.op_tmp = {'like': False, 'comment': False}
@@ -171,7 +175,7 @@ class InstaBot:
 
 		except:
 			self.ERROR['importing'] = True
-			self.console_log('\nERROR importing cached lists.\n')
+			self.console_log('\nERROR importing cached lists')
 		
 		self.cache['unfollow'] = False
 
@@ -180,7 +184,7 @@ class InstaBot:
 				self.cache['unfollow'] = [line.strip().split(',') for line in open('cache/followlist.csv', 'r')]
 
 		except:
-			print 'ERROR importing cached follow list'
+			self.console_log('\nERROR importing cached follow list')
 
 	def sort_enabling(self):
 		
@@ -207,8 +211,7 @@ class InstaBot:
 			if self.params['comments_in_day'] > 0:
 				self.enabled['comment'] = True
 
-			if self.params['unfollow_in_day'] > 0:
-				self.enabled['unfollow'] = True
+			self.enabled['unfollow'] = self.params['unfollow']
 
 		except:
 			self.console_log('ERROR while sorting parameters. Check you entered the right formats.')
@@ -244,11 +247,12 @@ class InstaBot:
 			self.params['time_in_day'] = int(self.times['stop_bot'] - self.times['start_bot'])
 			self.params['total_operations'] += self.params['time_in_day']/60/60
 
+		follow_delays = return_random_sequence(self.params['follow_in_day'], self.params['time_in_day'])
 		self.delays = { 
 			'like': return_random_sequence(self.params['likes_in_day'], self.params['time_in_day']), 
-			'follow': return_random_sequence(self.params['follow_in_day'], self.params['time_in_day']), 
+			'follow': follow_delays, 
 			'comment': return_random_sequence(self.params['comments_in_day'], self.params['time_in_day']), 
-			'unfollow': return_random_sequence(self.params['unfollow_in_day'], self.params['time_in_day']),
+			'unfollow': follow_delays,
 			'like_feed': [60*60 for i in range(0, int(self.params['time_in_day']/60/60))]	
 		}
 
@@ -292,7 +296,7 @@ class InstaBot:
 			'like': self.params['likes_in_day'], 
 			'follow': self.params['follow_in_day'], 
 			'comment': self.params['comments_in_day'], 
-			'unfollow': self.params['unfollow_in_day'],
+			'unfollow': self.params['follow_in_day'],
 			'like_feed': self.params['time_in_day']/60/60, 
 			'all': self.params['total_operations']
 		}
@@ -301,7 +305,7 @@ class InstaBot:
 
 		# --- resets the day counters ---
 
-		self.day_counters = {'all':0, 'like_feed': 0, 'like': 0, 'follow': 0, 'unfollow': 0, 'comment': 0}
+		self.day_counters = {'all':0, 'like_feed': 0, 'like': 0, 'follow': 0, 'comment': 0}
 
 	def catch_up_operations(self):
 
@@ -615,9 +619,15 @@ class InstaBot:
 					and self.max_operation[operation] > self.day_counters[operation] \
 					and self.max_operation['all'] > self.day_counters['all']:
 
+					if operation == 'unfollow':
+						if self.bucket['explore']['unfollow']:
+							self.next_operation[operation] = min(i[1] for i in self.bucket['explore']['unfollow'])	
+					
 					self.next_operation[operation] += self.delays[operation][self.day_counters[operation]]
 					self.day_counters['all'] += 1
 					self.day_counters[operation] += 1
+					if self.day_counters['unfollow'] == self.max_operation['unfollow']:
+						self.day_counters['unfollow'] = 0
 
 					response = self.insta_operation(operation)
 					
