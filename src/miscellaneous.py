@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.0.2 by nickpettican           ___
+# ___        InstaBot V 1.0.3 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___

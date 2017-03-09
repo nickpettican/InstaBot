@@ -1,17 +1,32 @@
-# InstaBot
+# InstaBot 1.0.3
 Automate your Instagram activity with InstaBot - a customisable bot that likes, follows and comments
 
 ## Synopsis
 
-InstaBot is a Python-based automated Instagram bot made for Social Media Marketing Campaigns in order to reach the desired audience while saving time and money. InstaBot will like, comment and follow (and unfollow) those users you want to reach. It does so by seeking out media tagged with the hashtags you want while eliminating those you don't want. To do so you will need to fill out `input/tags.csv` and `input/tags_to_avoid.csv`. Additionally, every hour it will like 5 of your friend's posts on your news feed (contact me if you want to change this). You will need to tell InstaBot who your friends are by filling out `input/friends.csv`. 
+InstaBot is a Python-based automated Instagram bot made for **Social Media Marketing Campaigns** in order to reach the desired audience while saving time and money. 
 
-InstaBot also builds a `profile` from the media in your feed in order to map out your "followers" and "following" as well as to calculate which profiles you followed are fake and which profiles you followed are now following you back. Those that are fake will be unfollowed. Those that followed you back will be removed from the "unfollow list", and will not be unfollowed. Alternatively, if they were unfollowed recently, they will be followed back. 
+InstaBot will:
 
-You can set the bot to run all day or to start and stop at set times. *Please be aware that the bot works on 24-hour military time*. If you switch it on halfway through the day and have it on for just 12 hours a day, it will calculate how many operations it would have completed by then and finish off. This is to avoid doing 12 hours worth of operations in just 5.
+* **Like**, **comment** and **follow** (and **unfollow**) those users you want to reach. 
+* It does so by seeking out **media tagged with the hashtags you want** while **excluding those you don't want**. To do so you will need to fill out `input/tags.csv` and `input/tags_to_avoid.csv`. 
+* Additionally, every hour it will **like** 5 of **your friend's posts on your news feed** (contact me if you want to change this amount). You will need to tell InstaBot who your friends are by filling out `input/friends.csv`. 
+* InstaBot also **builds a `profile`** from the media in your feed in order to **map out your "followers" and "following"** as well as to **calculate which profiles you followed are fake** and **which profiles you followed are now following you back**. Those that are fake will be unfollowed. Those that followed you back will be removed from the "unfollow list", and will not be unfollowed. Alternatively, if they were unfollowed recently, they will be followed back. 
 
-If you need to shut it down and you are still following people, it will unfollow them as quickly as it can. Unfollowing very quickly will risk a ban, so InstaBot takes 30-60 second breaks. If you can't wait, InstaBot will save the current following to a backup file, and next time you switch it on it will unfollow them first.
+You can:
 
-Internet connection breaks? No problem. InstaBot will wait until your internet connection is back in order to continue.
+* Set the bot to run all day
+* Set to start and stop at set times e.g. 07:00 to 23:00.
+
+*Please be aware that the bot works on 24-hour military time*, so you should input 09:00 to have it start at 9am. If you switch it on halfway through the day and have it on for just 12 hours a day, it will calculate how many operations it would have completed by then and finish off. This is to avoid doing 12 hours worth of operations in just 5.
+
+If you need to shut it down: 
+
+* If you are still following people, it will unfollow them as quickly as it can. 
+> Unfollowing very quickly will risk a ban, so InstaBot takes 30-60 second breaks. 
+* If you can't wait, InstaBot will save the current following to a backup file, and next time you switch it on it will unfollow them first.
+
+Internet connection breaks? 
+* No problem. InstaBot will wait until your internet connection is back in order to continue.
 
 ## Motivation
 
@@ -51,7 +66,7 @@ Now all you have to do is go to the parent directory and type in the terminal `p
 
 ## Server
 
-If you haven't got a server I find a Raspberry Pi works just fine. All you need is to download the files into the Pi and run the bot!
+If you haven't got a server I find a Raspberry Pi works just fine. All you need is to download the files into the Pi, install the libraries and run the bot.
 
 ## Warnings
 

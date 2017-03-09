@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.0.2 by nickpettican           ___
+# ___        InstaBot V 1.0.3 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___
@@ -34,7 +34,7 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 			bucket['codes'][i['media_id']] = i['url_code']
 
 		if enabled['like_feed']:
-			bucket['feed']['like'].extend([[i['media_id'], i['username'], i['user_fullname']] for i in data 
+			bucket['feed']['like'].extend([[i['media_id'], i['username']] for i in data 
 											if any(n.lower() == i['username'].lower() for n in friends) 
 											if not user_id == i['user_id']
 											if not any(n == i['media_id'] for n in bucket['feed']['done'])
@@ -91,6 +91,7 @@ def news_feed_media(pull, url, user_id):
 	# --- returns the latest media on the news feed ---
 	
 	posts = False
+	nodes = False
 	
 	try:
 		news_feed = pull.get(url)
@@ -98,36 +99,32 @@ def news_feed_media(pull, url, user_id):
 		identifier = 'window._sharedData = '
 		
 		for a in tree.findall('.//script'):
-
 			try:
 				if a.text.startswith(identifier):
-					nodes = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['FeedPage'][0]['feed']['media']['nodes']
+					nodes = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['FeedPage'][0]['graphql']['user']['edge_web_feed_timeline']['edges']
 					break
 
 			except:
 				continue
 
 		if nodes:
-
 			posts = []
-
 			for n in nodes:
-				if not n['owner']['id'] == user_id:
-
-					try:
-						post = {'user_id': n['owner']['id'], 
-								'username': n['owner']['username'], 
-								'likes': n['likes']['count'], 
-								'caption': n['caption'], 
-								'media_id': n['id'], 
-								'user_fullname': n['owner']['full_name'], 
-								'url_code': n['code']}
+				try:
+					if not n['node']['owner']['id'] == user_id and not n['node']['viewer_has_liked']:
+						post = {'user_id': n['node']['owner']['id'],
+								'username': n['node']['owner']['username'],
+								'likes': n['node']['edge_media_preview_like']['count'], 
+								'caption': n['node']['edge_media_to_caption']['edges'][0]['node']['text'], 
+								'media_id': n['node']['id'],
+								'url_code': n['node']['shortcode']}
+						
 						posts.append(post)
-					except:
-						continue
+				except:
+					continue
 
-	except:
-		print '\nERROR getting news feed media.'
+	except Exception as e:
+		print '\nError getting new feed data: %s.' %(e)
 	
 	return posts
 
@@ -162,12 +159,10 @@ def check_user(pull, url, user):
 			if data['followed_by']['count'] > 0:
 				if data['follows']['count'] / data['followed_by']['count'] > 2 and data['followed_by'] < 10:
 					result['fake'] = True
-			else:
-				result['fake'] = True
-
-			if data['followed_by']['count'] > 0:
 				if data['follows']['count'] / data['media']['count'] < 10 and data['followed_by']['count'] / data['media']['count'] < 10:
 					result['active'] = True
+			else:
+				result['fake'] = True
 
 			result['data'] = {
 				'username': data['username'],
@@ -177,8 +172,8 @@ def check_user(pull, url, user):
 				'followers': data['followed_by']['count']
 			}
 
-	except:
-		print '\nERROR getting user data.'
+	except Exception as e:
+		print '\nError checking user: %s.' %(e)
 
 	time.sleep(5*random.random())
 	return result

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.0.2 by nickpettican           ___
+# ___        InstaBot V 1.0.3 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___
@@ -594,10 +594,10 @@ class InstaBot:
 
 				continue
 
-			except Exception as e:
+			#except Exception as e:
 
-				self.console_log('Error: %s' %(e))
-				continue
+			#	self.console_log('Error: %s' %(e))
+			#	continue
 
 			except KeyboardInterrupt:
 				self.clean_up(on_exit=True, statement='\nCleaning up...')
@@ -612,7 +612,7 @@ class InstaBot:
 		self.refill_bucket()
 
 		# --- run operations ---
-
+		#print self. time_now(), json.dumps(self.next_operation, indent=3)
 		for operation, enabled in self.enabled.items():
 			if enabled:
 				if self.next_operation[operation] < self.time_now() \
@@ -655,7 +655,8 @@ class InstaBot:
 			tag = random.choice(self.cache['tags'])
 			if (len(self.bucket['explore']['like']) < 5 and self.enabled['like']) or \
 				(len(self.bucket['explore']['follow']) < 5 and self.enabled['follow']):
-				self.console_log('\nRefilling bucket - looking for "%s" posts...' %(tag))
+				self.console_log('\nRefilling bucket - looking for "%s" posts... \,' %(tag))
+				bucket_len = len(self.bucket['explore']['like'])
 				
 				try:
 					self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], tag, self.params['media_max_likes'], 
@@ -663,18 +664,22 @@ class InstaBot:
 				
 				except Exception as e:
 					tag = random.choice(self.cache['tags'])
-					self.console_log('Error: %s. Trying again with %s...' %(e, tag))
+					self.console_log('Error: %s. Trying again with %s... \,' %(e, tag))
 					self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], tag, self.params['media_max_likes'], 
 								self.params['media_min_likes']), self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'explore')
 				
+				self.console_log('found %s new.' %(len(self.bucket['explore']['like']) - bucket_len))
 
 			if len(self.bucket['feed']['like']) < 5:
 				if self.time_now() > self.next_check_feed:
 					self.next_check_feed += 5*60
-					self.console_log("\nScrowling through feed for friend's posts...")
-
+					self.console_log("\nScrolling through feed for friend's posts... \,")
+					
+					bucket_feed_len = len(self.bucket['feed']['like'])
 					feed_data = news_feed_media(self.pull, self.insta_urls['domain'], self.profile.profile['user']['user_id'])
 					self.bucket = refill(self.profile.profile['user']['user_id'], feed_data, self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'feed')
+					self.console_log('found %s, %s from friends.' %(len(feed_data), len(self.bucket['feed']['like']) - bucket_feed_len))
+					
 					self.organise_profile(feed_data)
 
 			minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
@@ -868,7 +873,7 @@ class InstaBot:
 				liked = post_data(self.pull, self.insta_urls['like'], post_ids[i][0], False)
 					
 				if liked['response'].ok:
-					self.console_log(" * Liked %s's post %s" %(post_ids[i][2], self.insta_urls['media'] %(self.bucket['codes'][post_ids[i][0]])))
+					self.console_log(" * Liked %s's post %s" %(post_ids[i][1], self.insta_urls['media'] %(self.bucket['codes'][post_ids[i][0]])))
 					self.bucket['feed']['like'].remove(post_ids[i])
 					self.bucket['feed']['done'].append(post_ids[i])
 					
@@ -894,10 +899,13 @@ class InstaBot:
 
 		#print json.dumps(self.profile.profile, indent=3)
 
-		self.console_log('Checking the profiles of those you follow...')
+		self.console_log('Checking the profiles of those you follow:\n - \,')
 
 		user_names = list(set([post['username'] for post in data]))
 		users_data = [check_user(self.pull, self.insta_urls['user'], user) for user in user_names]
+		for user in users_data[:-1]:
+			self.console_log('%s, \,' %(user['data']['username']))
+		self.console_log('%s.' %(users_data[-1]['data']['username']))
 
 		for user in users_data:
 			if user['follower'] and not user['fake']:
@@ -981,7 +989,10 @@ class InstaBot:
 			log = statement.replace('\,', '')
 		
 			if self.console_tmp:
-				self.console_tmp = self.console_tmp + log
+				try:
+					self.console_tmp += log
+				except:
+					pass
 		
 			else:
 				self.console_tmp = log
