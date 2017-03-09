@@ -24,6 +24,7 @@ If you need to shut it down:
 * If you are still following people, it will unfollow them as quickly as it can.
 
 > Unfollowing very quickly will risk a ban, so InstaBot takes 30-60 second breaks. 
+
 * If you can't wait, InstaBot will save the current following to a backup file, and next time you switch it on it will unfollow them first.
 
 Internet connection breaks? 
