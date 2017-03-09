@@ -21,7 +21,8 @@ You can:
 
 If you need to shut it down: 
 
-* If you are still following people, it will unfollow them as quickly as it can. 
+* If you are still following people, it will unfollow them as quickly as it can.
+
 > Unfollowing very quickly will risk a ban, so InstaBot takes 30-60 second breaks. 
 * If you can't wait, InstaBot will save the current following to a backup file, and next time you switch it on it will unfollow them first.
 
@@ -30,7 +31,7 @@ Internet connection breaks?
 
 ## Motivation
 
-Digital Marketing is becoming more and more complicated, with new platforms coming out and newer and better competitors appearing left right and center. InstaBot was created in order to save the time of having to reach out to the potential audience by liking posts and following those that will be interested in your service. Not everyone on instagram is actively seeking out interesting profiles on the 'explore' tab, so in order to reach them, a like and a follow might be enough to spark that extra interest for them to visit your profile.
+Digital Marketing is becoming more and more complicated, with new platforms coming out and newer and better competitors appearing left right and center. InstaBot was created in order to save the time of having to reach out to the potential audience by liking posts and following those that will be interested in your service. Not everyone on Instagram is actively seeking out interesting profiles on the 'explore' tab, so in order to reach them, a like and a follow might be enough to spark that extra interest for them to visit your profile.
 
 ## Installation
 
@@ -46,8 +47,8 @@ Once that's done, open the `config` file and insert your credentials and prefere
 
 |	Variables   		|	Defaults   				|	Explanation 															|
 |:---------------------:|:-------------------------:|:------------------------------------------------------------------------	|
-|	username			|	username				|	Your instagram username													|
-|	password			|	password	 			|	Your instagram password													|
+|	username			|	username				|	Your Instagram username													|
+|	password			|	password	 			|	Your Instagram password													|
 |	friends				|	input/friends.csv		|	Friends file - alternatively you can use ['friend1', 'friend2',...]		|
 |	tags 		 		|	input/tags.csv			|	Tags file - alternatively you can use ['tag1', 'tag2', 'tag3',...]		|
 |	tags_to_avoid		|	input/tags_to_avoid.csv	|	Tags to avoid file - you can also use ['tagx', 'tagy',...]				|
