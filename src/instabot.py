@@ -594,10 +594,10 @@ class InstaBot:
 
 				continue
 
-			#except Exception as e:
+			except Exception as e:
 
-			#	self.console_log('Error: %s' %(e))
-			#	continue
+				self.console_log('Error: %s' %(e))
+				continue
 
 			except KeyboardInterrupt:
 				self.clean_up(on_exit=True, statement='\nCleaning up...')
@@ -923,7 +923,7 @@ class InstaBot:
 				if any(user['data']['user_id'] == user_id[0] for user_id in self.bucket['explore']['unfollow']):
 					for i, user_id in enumerate(self.bucket['explore']['unfollow']):
 						if user['data']['user_id'] == user_id[0]:
-							self.console_log(' - %s followed you back - \,' %(user['username']))
+							self.console_log(' - %s followed you back - \,' %(user['data']['username']))
 							del self.bucket['explore']['unfollow'][i]
 							self.console_log('removed from unfollow list')
 							break
@@ -933,7 +933,7 @@ class InstaBot:
 				if any(user['data']['user_id'] == user_id[0] for user_id in self.bucket['explore']['done']['unfollow']):
 					for i, user_id in enumerate(self.bucket['explore']['done']['unfollow']):
 						if user['data']['user_id'] == user_id[0]:
-							self.console_log(' - %s followed you back but was unfollowed - \,' %(user['username']))
+							self.console_log(' - %s followed you back but was unfollowed - \,' %(user['data']['username']))
 							del self.bucket['explore']['done']['unfollow'][i]
 							try:
 								response = post_data(self.pull, self.insta_urls['follow'], user['data']['user_id'], False)
