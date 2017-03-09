@@ -157,10 +157,18 @@ def check_user(pull, url, user):
 				result['follower'] = True
 
 			if data['followed_by']['count'] > 0:
-				if data['follows']['count'] / data['followed_by']['count'] > 2 and data['followed_by'] < 10:
+				try:
+					if data['follows']['count'] / data['followed_by']['count'] > 2 and data['followed_by'] < 10:
+						result['fake'] = True
+				except ZeroDivisionError:
 					result['fake'] = True
-				if data['follows']['count'] / data['media']['count'] < 10 and data['followed_by']['count'] / data['media']['count'] < 10:
-					result['active'] = True
+
+				try:
+					if data['follows']['count'] / data['media']['count'] < 10 and data['followed_by']['count'] / data['media']['count'] < 10:
+						result['active'] = True
+				except ZeroDivisionError:
+					pass
+
 			else:
 				result['fake'] = True
 
