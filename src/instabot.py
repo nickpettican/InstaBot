@@ -305,7 +305,8 @@ class InstaBot:
 
 		# --- resets the day counters ---
 
-		self.day_counters = {'all':0, 'like_feed': 0, 'like': 0, 'follow': 0, 'comment': 0}
+		unfollow_counter_tmp = self.day_counters['unfollow']
+		self.day_counters = {'all':0, 'like_feed': 0, 'like': 0, 'follow': 0, 'comment': 0, 'unfollow': unfollow_counter_tmp}
 
 	def catch_up_operations(self):
 
