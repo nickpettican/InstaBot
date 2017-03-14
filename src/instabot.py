@@ -500,8 +500,9 @@ class InstaBot:
 			self.log_out()
 
 		except Exception as e:
-			 self.console_log('Error: %s' %(e))
-			 self.log_out()
+			 self.console_log('Error cleaning up: %s' %(e))
+			 if on_exit:
+				 self.log_out()
 
 	# === END REQUESTS OPERATIONS ===
 
