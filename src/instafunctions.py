@@ -37,7 +37,7 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 			bucket['feed']['like'].extend([[i['media_id'], i['username']] for i in data 
 											if any(n.lower() == i['username'].lower() for n in friends) 
 											if not user_id == i['user_id']
-											if not any(n == i['media_id'] for n in bucket['feed']['done'])
+											if not any(n[0] == i['media_id'] for n in bucket['feed']['done'])
 											if not any(n in i['caption'] for n in tags_to_avoid)])
 	
 	if mode == 'explore' and data['posts']:

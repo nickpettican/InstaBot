@@ -861,23 +861,32 @@ class InstaBot:
 
 		# --- like news feed ---
 
-		post_ids = list(self.bucket['feed']['like'])
+		post_ids = self.bucket['feed']['like']
 
-		if len(post_ids) < 1:
+		if len(post_ids) == 0:
 			self.console_log('\nNo new posts from your friends to like')
 			return [True]
 
+		elif len(post_ids) > 5:
+			until = 5
+
+		else:
+			until = len(post_ids)
+
 		self.console_log('\nLiking news feed...')
 
-		for i in range(0, 5):
+		for i in range(0, until):
 
 			try:
-				liked = post_data(self.pull, self.insta_urls['like'], post_ids[i][0], False)
+				post = self.bucket['feed']['like'][0]
+
+				liked = post_data(self.pull, self.insta_urls['like'], post[0], False)
 					
 				if liked['response'].ok:
-					self.console_log(" * Liked %s's post %s" %(post_ids[i][1], self.insta_urls['media'] %(self.bucket['codes'][post_ids[i][0]])))
-					self.bucket['feed']['like'].remove(post_ids[i])
-					self.bucket['feed']['done'].append(post_ids[i])
+					self.console_log(" * Liked %s's post %s" %(post[1], self.insta_urls['media'] %(self.bucket['codes'][post[0]])))
+
+					self.bucket['feed']['done'].append(post)
+					self.bucket['feed']['like'].remove(post)
 					
 				elif liked['response'].status_code == 400:
 					self.banned['400'] += 1
@@ -886,8 +895,8 @@ class InstaBot:
 				else:
 					self.console_log("ERROR %s - could not like %s's media" %(liked['response'].status_code, post_ids[i][2]))
 				
-			except:
-				continue
+			except Exception as e:
+				self.console_log(' * Error: %s' %(e))
 
 			time.sleep(10*random.random())
 
