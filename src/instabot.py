@@ -53,7 +53,7 @@ class InstaBot:
 		'bot_stop_at': '23:00'
 	}):
 
-		self.header = '\n--- InstaBot V 1.0.2 by nickpettican ---\
+		self.header = '\n--- InstaBot V 1.0.3 by nickpettican ---\
 					   \n--- Automate your Instagram activity ---\n'
 
 		self.console_log('START')
@@ -90,7 +90,8 @@ class InstaBot:
 				},
 			},
 			'feed':	{
-				'like': [], 
+				'like': [],
+				'media_ids': [],
 				'done': []
 			},
 			'codes': {}
