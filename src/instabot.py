@@ -615,7 +615,7 @@ class InstaBot:
 		self.refill_bucket()
 
 		# --- run operations ---
-		#print self. time_now(), json.dumps(self.next_operation, indent=3)
+
 		for operation, enabled in self.enabled.items():
 			if enabled:
 				if self.next_operation[operation] < self.time_now() \
@@ -1022,5 +1022,7 @@ class InstaBot:
 			self.activity_log.append([statement.strip()])
 
 			print log
+
+		self.back_up()
 
 # === END ===
