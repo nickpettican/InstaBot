@@ -53,6 +53,9 @@ class InstaBot:
 		'bot_stop_at': '23:00'
 	}):
 
+		self.today = arrow.now().format('DD_MM_YYYY')
+		self.users_checked_today = []
+
 		self.header = '\n--- InstaBot V 1.0.3 by nickpettican ---\
 					   \n--- Automate your Instagram activity ---\n'
 
@@ -415,18 +418,37 @@ class InstaBot:
 			# check if login successful
 		
 			if extract_login.ok:
-				main_page = self.pull.get(self.insta_urls['domain'])
-				if self.params['username'] in main_page.text:
-					self.logged_in = True
+				if self.check_login():
 					self.console_log('successfully signed in!')
+					self.logged_in = True
 					time.sleep(2)
+
+				else:
+					self.console_log('ERROR, could not sign in.')
+					exit('\nCheck you entered the correct details!\n')
 
 			else:
 				self.console_log('ERROR, could not sign in.')
-				exit('\nBye!\n')
+				exit('\nCheck you entered the correct details!\n')
 
 		except:
 			self.console_log('\nERROR while attempting sign in\n')
+
+	def check_login(self):
+
+		# --- checks if user is logged in ---
+
+		try:
+			main_page = self.pull.get(self.insta_urls['domain'])
+			if self.params['username'] in main_page.text:
+				return True
+
+			else:
+				return False
+
+		except Exception as e:
+			self.console_log('ERROR checking if logged in: %s' %(e))
+			return False
 			
 	def log_out(self):
 		
@@ -515,12 +537,17 @@ class InstaBot:
 
 		self.profile.save_unfollow_list()
 
+		if self.today != arrow.now().format('DD_MM_YYYY'):
+			self.activity_log = []
+			self.users_checked_today = []
+			self.today = arrow.now().format('DD_MM_YYYY')
+
 		if not self.ERROR['cache']:
 		
 		# --- saves activity log ---
 		
 			try:
-				with open('cache/activity_log.csv', 'wb') as log:
+				with open('cache/activity_log_'+ self.today +'.csv', 'wb') as log:
 					w = csv.writer(log)
 					w.writerows(self.activity_log)
 			
@@ -552,7 +579,14 @@ class InstaBot:
 
 		self.console_log('\nStarting operations - %s' %(arrow.now().format('HH:mm:ss DD/MM/YYYY')))
 
+		self.loop_count = 0
+
 		time.sleep(2*random.random())
+
+		if self.times['start_bot'] > self.time_now():
+			self.console_log('\nOut of hours... sleeping until %s' %(self.params['bot_start_at']))
+			print self.times['start_bot'], self.time_now(), self.times['tomorrow_start']
+			time.sleep(int(self.times['start_bot'] - self.time_now()))
 
 		while True:
 			dc = self.day_counters
@@ -578,14 +612,15 @@ class InstaBot:
 					time.sleep(10)
 					self.console_log('\nSleeping until %s' %(self.params['bot_start_at']))
 
-					while self.times['stop_bot'] < self.time_now() < self.times['tomorrow_start']:
-						time.sleep(60)
+					time.sleep(int(self.times['start_bot'] - self.time_now()))
 
 					if self.time_now() > self.times['tomorrow_start']:
 						self.reset_day_counters()
 						self.starting_operations()
 
 			except ConnectionError:
+				self.console_log('connection error')
+
 				while not internet_connection():
 					self.console_log('NO INTERNET - re-establish connection to continue')
 					time.sleep(60)
@@ -593,7 +628,8 @@ class InstaBot:
 				self.reset_day_counters()
 				self.starting_operations()
 				self.catch_up_operations()
-				self.init_requests()
+				if not self.check_login():
+					self.init_requests()
 
 				continue
 
@@ -613,6 +649,7 @@ class InstaBot:
 		# --- main loop of operations ---
 
 		self.refill_bucket()
+		self.loop_count += 1
 
 		# --- run operations ---
 
@@ -641,14 +678,18 @@ class InstaBot:
 					if response[0]:
 						self.banned['400'] = 0
 
-					minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
-					sleep_time = minim - self.time_now()
-					if sleep_time > 0:
-						print '\tWaiting %s seconds' %(sleep_time)
-						time.sleep(sleep_time)
+			minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
+			sleep_time = minim - self.time_now()
+			if sleep_time > 0:
+				print '\tWaiting %s seconds' %(sleep_time)
+				time.sleep(sleep_time)
 
 		if not internet_connection():
 			raise ConnectionError
+
+		if self.loop_count > 100:
+			print '\tWaiting 60 seconds'
+			time.sleep(60)
 
 	def refill_bucket(self):
 
@@ -698,6 +739,8 @@ class InstaBot:
 	def insta_operation(self, op):
 
 		# --- runs the instagram operation ---
+
+		self.loop_count = 0
 
 		if op == 'like_feed':
 			return self.like_feed()
@@ -916,76 +959,81 @@ class InstaBot:
 
 		#print json.dumps(self.profile.profile, indent=3)
 
-		self.console_log('Checking the profiles of those you follow:\n - \,')
+		self.console_log('Checking the profiles of those you follow:\n + Checked users:\,')
 
-		user_names = list(set([post['username'] for post in data]))
-		users_data = [check_user(self.pull, self.insta_urls['user'], user) for user in user_names]
-		for user in users_data[:-1]:
-			self.console_log('%s, \,' %(user['data']['username']))
-		self.console_log('%s.' %(users_data[-1]['data']['username']))
+		user_names = list(set([post['username'] for post in data if post['username'] not in self.users_checked_today]))
+		if len(user_names) > 1:
+			users_data = [check_user(self.pull, self.insta_urls['user'], user) for user in user_names]
+			for user in users_data[:-1]:
+				self.console_log('%s, \,' %(user['data']['username']))
+			self.console_log('%s.' %(users_data[-1]['data']['username']))
 
-		for user in users_data:
-			if user['follower'] and not user['fake']:
+			for user in users_data:
+				self.users_checked_today.append(user['data']['username'])
+				if user['follower'] and not user['fake']:
 
-				# --- add user to your followers list in profile ---
+					# --- add user to your followers list in profile ---
 
-				if not any(user['data']['user_id'] == node['user_id'] for node in self.profile.profile['followers']):
-					self.profile.add_follower(user['data'])
+					if not any(user['data']['user_id'] == node['user_id'] for node in self.profile.profile['followers']):
+						self.profile.add_follower(user['data'])
 
-				else:
-					self.profile.update_user(user['data'], 'followers')
+					else:
+						self.profile.update_user(user['data'], 'followers')
 
-				# --- remove from bucket if they are going to be unfollowed --- 
-				
-				if any(user['data']['user_id'] == user_id[0] for user_id in self.bucket['explore']['unfollow']):
+					# --- remove from bucket if they are going to be unfollowed --- 
+					
+					if any(user['data']['user_id'] == user_id[0] for user_id in self.bucket['explore']['unfollow']):
+						for i, user_id in enumerate(self.bucket['explore']['unfollow']):
+							if user['data']['user_id'] == user_id[0]:
+								self.console_log(' - %s followed you back - \,' %(user['data']['username']))
+								del self.bucket['explore']['unfollow'][i]
+								self.console_log('removed from unfollow list')
+								break
+
+					# --- if user has been unfollowed, follow back ---
+
+					if any(user['data']['user_id'] == user_id[0] for user_id in self.bucket['explore']['done']['unfollow']):
+						for i, user_id in enumerate(self.bucket['explore']['done']['unfollow']):
+							if user['data']['user_id'] == user_id[0]:
+								self.console_log(' - %s followed you back but was unfollowed - \,' %(user['data']['username']))
+								del self.bucket['explore']['done']['unfollow'][i]
+								try:
+									response = post_data(self.pull, self.insta_urls['follow'], user['data']['user_id'], False)
+									if response['response'].ok:
+										self.console_log('followed back!')
+
+									else:
+										self.console_log('ERROR %s while following back' %(response['response'].status_code))
+								
+								except:
+									self.console_log('ERROR while following back')
+								break
+
+				# --- unfollow if user is fake ---
+
+				elif user['fake']:
+					self.console_log(' - %s is a fake account - \,' %(user['data']['username']))
 					for i, user_id in enumerate(self.bucket['explore']['unfollow']):
 						if user['data']['user_id'] == user_id[0]:
-							self.console_log(' - %s followed you back - \,' %(user['data']['username']))
-							del self.bucket['explore']['unfollow'][i]
-							self.console_log('removed from unfollow list')
-							break
-
-				# --- if user has been unfollowed, follow back ---
-
-				if any(user['data']['user_id'] == user_id[0] for user_id in self.bucket['explore']['done']['unfollow']):
-					for i, user_id in enumerate(self.bucket['explore']['done']['unfollow']):
-						if user['data']['user_id'] == user_id[0]:
-							self.console_log(' - %s followed you back but was unfollowed - \,' %(user['data']['username']))
-							del self.bucket['explore']['done']['unfollow'][i]
-							try:
-								response = post_data(self.pull, self.insta_urls['follow'], user['data']['user_id'], False)
-								if response['response'].ok:
-									self.console_log('followed back!')
-
-								else:
-									self.console_log('ERROR %s while following back' %(response['response'].status_code))
+							response = self.explore_operation('unfollow', user_id)
+							if response[0]:
+								self.console_log('unfollowed!')
 							
-							except:
-								self.console_log('ERROR while following back')
+							else:
+								self.console_log('ERROR %s while unfollowing' %(response[1]))
 							break
 
-			# --- unfollow if user is fake ---
+				# --- add user to follow list in profile ---
 
-			elif user['fake']:
-				self.console_log(' - %s is a fake account - \,' %(user['data']['username']))
-				for i, user_id in enumerate(self.bucket['explore']['unfollow']):
-					if user['data']['user_id'] == user_id[0]:
-						response = self.explore_operation('unfollow', user_id)
-						if response[0]:
-							self.console_log('unfollowed!')
-						
-						else:
-							self.console_log('ERROR %s while unfollowing' %(response[1]))
-						break
+				if not any(user['data']['user_id'] == node['user_id'] for node in self.profile.profile['follows']):
+					self.console_log(' - %s will be added to follow list in profile' %(user['data']['username']))
+					self.profile.add_follow(user['data'])
 
-			# --- add user to follow list in profile ---
+				else:
+					self.profile.update_user(user['data'], 'follows')
 
-			if not any(user['data']['user_id'] == node['user_id'] for node in self.profile.profile['follows']):
-				self.console_log(' - %s will be added to follow list in profile' %(user['data']['username']))
-				self.profile.add_follow(user['data'])
-
-			else:
-				self.profile.update_user(user['data'], 'follows')
+		else:
+			self.console_log('all users have already been checked for today.')
 		
 	# === END MAIN LOOP
 
