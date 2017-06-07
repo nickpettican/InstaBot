@@ -236,7 +236,11 @@ class InstaBot:
 
 		# --- returns current timestamp ---
 
-		return float(arrow.now().timestamp)
+		try:
+			return float(arrow.utcnow().to('local').timestamp)
+			
+		except:
+			return float(arrow.now().timestamp)
 
 	def create_delays(self):
 
