@@ -215,7 +215,8 @@ class InstaBot:
 			if self.params['comments_in_day'] > 0:
 				self.enabled['comment'] = True
 
-			self.enabled['unfollow'] = self.params['unfollow']
+			if self.enabled['follow']:
+				self.enabled['unfollow'] = self.params['unfollow']
 
 		except:
 			self.console_log('ERROR while sorting parameters. Check you entered the right formats.')
@@ -496,7 +497,7 @@ class InstaBot:
 						time.sleep(sleep_time)
 
 			else:
-
+				# throwing Errno22?
 				while self.max_operation['unfollow'] > self.day_counters['unfollow']:
 					self.next_operation['unfollow'] += self.delays['unfollow'][self.day_counters['unfollow']]
 					self.day_counters['all'] += 1
@@ -585,7 +586,7 @@ class InstaBot:
 
 		if self.times['start_bot'] > self.time_now():
 			self.console_log('\nOut of hours... sleeping until %s' %(self.params['bot_start_at']))
-			print self.times['start_bot'], self.time_now(), self.times['tomorrow_start']
+			#print self.times['start_bot'], self.time_now(), self.times['tomorrow_start']
 			time.sleep(int(self.times['start_bot'] - self.time_now()))
 
 		while True:
@@ -674,8 +675,7 @@ class InstaBot:
 					if not response[0]:
 						if response[1].status_code == 400:
 							self.banned_sleep()
-
-					if response[0]:
+					else:
 						self.banned['400'] = 0
 
 			minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
