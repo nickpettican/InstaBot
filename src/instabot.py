@@ -618,7 +618,7 @@ class InstaBot:
 
 					sleep_time = int(self.times['tomorrow_start'] - self.time_now())
 					if sleep_time > 0:
-						time.sleep()
+						time.sleep(sleep_time)
 
 					if self.time_now() > self.times['tomorrow_start']:
 						self.reset_day_counters()
