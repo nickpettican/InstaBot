@@ -501,7 +501,6 @@ class InstaBot:
 						time.sleep(sleep_time)
 
 			else:
-				# throwing Errno22?
 				while self.max_operation['unfollow'] > self.day_counters['unfollow']:
 					self.next_operation['unfollow'] += self.delays['unfollow'][self.day_counters['unfollow']]
 					self.day_counters['all'] += 1
@@ -617,7 +616,9 @@ class InstaBot:
 					time.sleep(10)
 					self.console_log('\nSleeping until %s' %(self.params['bot_start_at']))
 
-					time.sleep(int(self.times['start_bot'] - self.time_now()))
+					sleep_time = int(self.times['tomorrow_start'] - self.time_now())
+					if sleep_time > 0:
+						time.sleep()
 
 					if self.time_now() > self.times['tomorrow_start']:
 						self.reset_day_counters()
