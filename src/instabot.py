@@ -481,6 +481,7 @@ class InstaBot:
 		try:
 			if on_exit:
 				while len(self.bucket['explore']['unfollow']) > 0:
+					self.clean_up_loop_count += 1
 					for user in sorted(self.bucket['explore']['unfollow'], key=itemgetter(1)):
 
 						user_id = user[0]
@@ -500,8 +501,14 @@ class InstaBot:
 						print '\tWaiting %s seconds' %(sleep_time)
 						time.sleep(sleep_time)
 
+					if self.clean_up_loop_count > 1000:
+						self.clean_up_loop_count = 0
+						self.console_log('The clean_up function is stuck in a loop. Breaking it...')
+						break
+
 			else:
 				while self.max_operation['unfollow'] > self.day_counters['unfollow']:
+					self.clean_up_loop_count += 1
 					self.next_operation['unfollow'] += self.delays['unfollow'][self.day_counters['unfollow']]
 					self.day_counters['all'] += 1
 					self.day_counters['unfollow'] += 1
@@ -519,6 +526,11 @@ class InstaBot:
 						break
 
 					time.sleep(self.delays['unfollow'][self.day_counters['unfollow']])
+
+					if self.clean_up_loop_count > 1000:
+						self.clean_up_loop_count = 0
+						self.console_log('The clean_up function is stuck in a loop. Breaking it...')
+						break
 
 		except KeyboardInterrupt:
 			if len(self.bucket['explore']['unfollow']):
@@ -584,6 +596,7 @@ class InstaBot:
 		self.console_log('\nStarting operations - %s' %(arrow.now().format('HH:mm:ss DD/MM/YYYY')))
 
 		self.loop_count = 0
+		self.clean_up_loop_count = 0
 
 		time.sleep(2*random.random())
 
@@ -863,6 +876,8 @@ class InstaBot:
 	def explore_operation(self, operation, identifier):
 
 		# --- sends requests post and checks response ---
+
+		self.clean_up_loop_count = 0
 
 		try:
 			comment = False
