@@ -588,15 +588,15 @@ class InstaBot:
 
 		# --- main ---
 
+		self.loop_count = 0
+		self.clean_up_loop_count = 0
+
 		if self.cache['unfollow']:
 			if len(self.cache['unfollow']) >= 1:
 				add = [self.bucket['explore']['unfollow'].append([user[0], i]) for i, user in enumerate(self.cache['unfollow'])]
 				self.clean_up(on_exit=True, statement='\nCleaning up last sessions follows...')
 
 		self.console_log('\nStarting operations - %s' %(arrow.now().format('HH:mm:ss DD/MM/YYYY')))
-
-		self.loop_count = 0
-		self.clean_up_loop_count = 0
 
 		time.sleep(2*random.random())
 
@@ -805,6 +805,7 @@ class InstaBot:
 				self.console_log('\n * Trying to unfollow %s... \,' %(user_id))
 
 				self.profile.remove_follow(user_id)
+				self.profile.master_unfollow_list.append(user_id)
 
 				return self.explore_operation('unfollow', user)
 
