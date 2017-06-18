@@ -525,7 +525,9 @@ class InstaBot:
 					if self.time_now() > self.times['tomorrow_start']:
 						break
 
-					time.sleep(self.delays['unfollow'][self.day_counters['unfollow']])
+					sleep_time = self.delays['unfollow'][self.day_counters['unfollow']]
+					print '\tWaiting %s seconds' %(sleep_time)
+					time.sleep(sleep_time)
 
 					if self.clean_up_loop_count > 1000:
 						self.clean_up_loop_count = 0
