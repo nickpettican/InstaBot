@@ -602,10 +602,11 @@ class InstaBot:
 
 		time.sleep(2*random.random())
 
-		if self.times['start_bot'] > self.time_now():
-			self.console_log('\nOut of hours... sleeping until %s' %(self.params['bot_start_at']))
-			#print self.times['start_bot'], self.time_now(), self.times['tomorrow_start']
-			time.sleep(int(self.times['start_bot'] - self.time_now()))
+		if not self.run_all_day:
+			if self.times['start_bot'] > self.time_now():
+				self.console_log('\nOut of hours... sleeping until %s' %(self.params['bot_start_at']))
+				#print self.times['start_bot'], self.time_now(), self.times['tomorrow_start']
+				time.sleep(int(self.times['start_bot'] - self.time_now()))
 
 		while True:
 			dc = self.day_counters
