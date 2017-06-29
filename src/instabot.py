@@ -57,7 +57,7 @@ class InstaBot:
 		self.users_checked_today = []
 
 		self.header = '\n\tInstaBot V 1.1.0 by nickpettican\
-					   \n\nAutomate your Instagram activity\n\
+					   \n\tAutomate your Instagram activity\n\
 					   \n\tNew features:\
 					   \n\t- Check user before unfollowing\
 					   \n\t- Know exactly who you follow'
