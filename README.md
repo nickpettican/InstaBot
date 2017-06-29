@@ -1,4 +1,4 @@
-# InstaBot 1.0.3
+# InstaBot 1.1.0
 Automate your Instagram activity with InstaBot - a customisable bot that likes, follows and comments
 
 ## Synopsis

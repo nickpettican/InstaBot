@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.0.3 by nickpettican           ___
+# ___        InstaBot V 1.1.0 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___
@@ -45,6 +45,8 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 	if mode == 'explore' and data['posts']:
 		for i in data['posts']:
 			bucket['codes'][i['media_id']] = i['url_code']
+			bucket['user_ids'][i['user_id']] = i['username']
+		
 		tmp = [['like', 'media_id'], ['follow', 'user_id'], ['comment', 'media_id']]
 		params = [param for param in tmp if enabled[param[0]]]
 
@@ -59,7 +61,7 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
 
 	return bucket
 
-def media_by_tag(pull, tag_url, tag, media_max_likes, media_min_likes):
+def media_by_tag(pull, tag_url, media_url, tag, media_max_likes, media_min_likes):
 	
 	# --- returns list with the 14 'nodes' (posts) for the tag page ---
 	
@@ -69,24 +71,56 @@ def media_by_tag(pull, tag_url, tag, media_max_likes, media_min_likes):
 	
 		explore_site = pull.get(tag_url %(tag))
 		tree = etree.HTML(explore_site.text)
-		identifier = 'window._sharedData = '
-	
-		for a in tree.findall('.//script'):
-	
-			try:
-				if a.text.startswith(identifier):
+		data = return_sharedData(tree)
 
-					nodes = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['TagPage'][0]['tag']['media']['nodes']
-					result['posts'] = [{'user_id': n['owner']['id'], 'likes': n['likes']['count'], 'caption': n['caption'], 'media_id': n['id'], 'url_code': n['code']} 
-										for n in nodes if media_min_likes <= n['likes']['count'] <= media_max_likes if not n['comments_disabled']]
-					break
-	
-			except:
-				continue
+		if data:
+			nodes = data['entry_data']['TagPage'][0]['tag']['media']['nodes']
+			result['posts'] = [{'user_id': n['owner']['id'],
+								'username': return_username(pull, media_url, n['code']),
+								'likes': n['likes']['count'], 
+								'caption': n['caption'], 
+								'media_id': n['id'], 
+								'url_code': n['code']} 
+								for n in nodes if media_min_likes <= n['likes']['count'] <= media_max_likes if not n['comments_disabled']]
+
 	except:
-		print '\nERROR in obtaining media by tag'
+		print '\nError in obtaining media by tag: %s' %(e)
 			
 	return result
+
+def return_sharedData(tree):
+
+	# --- returns the sharedData JSON object ---
+
+	identifier = 'window._sharedData = '
+	for a in tree.findall('.//script'):
+		try:
+			if a.text.startswith(identifier):
+				try:
+					return json.loads(a.text.replace(identifier, '')[:-1])
+
+				except Exception as e:
+					print '\nError returning sharedData JSON: %s' %(e)
+
+		except Exception as e:
+			continue
+
+	return False
+
+def return_username(pull, media_url, code):
+
+	# --- returns the username from an image ---
+
+	try:
+		media_page = pull.get(media_url %(code))
+		tree = etree.HTML(media_page.text)
+		data = return_sharedData(tree)
+		return data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['owner']['username']
+
+	except Exception as e:
+		print '\nError obtaining username: %s' %(e)
+
+	return False
 
 def news_feed_media(pull, url, user_id):
 	
@@ -98,16 +132,10 @@ def news_feed_media(pull, url, user_id):
 	try:
 		news_feed = pull.get(url)
 		tree = etree.HTML(news_feed.text)
-		identifier = 'window._sharedData = '
-		
-		for a in tree.findall('.//script'):
-			try:
-				if a.text.startswith(identifier):
-					nodes = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['FeedPage'][0]['graphql']['user']['edge_web_feed_timeline']['edges']
-					break
+		data = return_sharedData(tree)
 
-			except:
-				continue
+		if data:
+			nodes = data['entry_data']['FeedPage'][0]['graphql']['user']['edge_web_feed_timeline']['edges']
 
 		if nodes:
 			posts = []
@@ -142,31 +170,22 @@ def check_user(pull, url, user):
 	try:
 		site = pull.get(url %(user))
 		tree = etree.HTML(site.text)
-		identifier = 'window._sharedData = '
-		data = False
-		
-		for a in tree.findall('.//script'):
-			try:
-				if a.text.startswith(identifier):
-					data = json.loads(a.text.replace(identifier, '')[:-1])['entry_data']['ProfilePage'][0]['user']
-					break
+		data = return_sharedData(tree)
+		user_data = data['entry_data']['ProfilePage'][0]['user']
 
-			except:
-				continue
-
-		if data:
-			if data['follows_viewer'] or data['has_requested_viewer']:
+		if user_data:
+			if user_data['follows_viewer'] or user_data['has_requested_viewer']:
 				result['follower'] = True
 
-			if data['followed_by']['count'] > 0:
+			if user_data['followed_by']['count'] > 0:
 				try:
-					if data['follows']['count'] / data['followed_by']['count'] > 2 and data['followed_by'] < 10:
+					if user_data['follows']['count'] / user_data['followed_by']['count'] > 2 and user_data['followed_by'] < 10:
 						result['fake'] = True
 				except ZeroDivisionError:
 					result['fake'] = True
 
 				try:
-					if data['follows']['count'] / data['media']['count'] < 10 and data['followed_by']['count'] / data['media']['count'] < 10:
+					if user_data['follows']['count'] / user_data['media']['count'] < 10 and user_data['followed_by']['count'] / user_data['media']['count'] < 10:
 						result['active'] = True
 				except ZeroDivisionError:
 					pass
@@ -175,11 +194,11 @@ def check_user(pull, url, user):
 				result['fake'] = True
 
 			result['data'] = {
-				'username': data['username'],
-				'user_id': data['id'],
-				'media': data['media']['count'],
-				'follows': data['follows']['count'],
-				'followers': data['followed_by']['count']
+				'username': user_data['username'],
+				'user_id': user_data['id'],
+				'media': user_data['media']['count'],
+				'follows': user_data['follows']['count'],
+				'followers': user_data['followed_by']['count']
 			}
 
 	except Exception as e:

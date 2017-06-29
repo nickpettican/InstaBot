@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.0.3 by nickpettican           ___
+# ___        InstaBot V 1.1.0 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___
@@ -56,8 +56,11 @@ class InstaBot:
 		self.today = arrow.now().format('DD_MM_YYYY')
 		self.users_checked_today = []
 
-		self.header = '\n--- InstaBot V 1.0.3 by nickpettican ---\
-					   \n--- Automate your Instagram activity ---\n'
+		self.header = '\n\tInstaBot V 1.1.0 by nickpettican\
+					   \n\nAutomate your Instagram activity\n\
+					   \n\tNew features:\
+					   \n\t- Check user before unfollowing\
+					   \n\t- Know exactly who you follow'
 
 		self.console_log('START')
 
@@ -97,7 +100,8 @@ class InstaBot:
 				'media_ids': [],
 				'done': []
 			},
-			'codes': {}
+			'codes': {},
+			'user_ids': {}
 		}
 
 		url = 'https://www.instagram.com/'
@@ -641,11 +645,12 @@ class InstaBot:
 						self.starting_operations()
 
 			except ConnectionError:
-				self.console_log('connection error')
+				self.console_log('Connection error!')
 
-				while not internet_connection():
-					self.console_log('NO INTERNET - re-establish connection to continue')
-					time.sleep(60)
+				if not internet_connection():
+					while not internet_connection():
+						self.console_log('NO INTERNET - re-establish connection to continue')
+						time.sleep(60)
 
 				self.reset_day_counters()
 				self.starting_operations()
@@ -724,13 +729,13 @@ class InstaBot:
 				bucket_len = len(self.bucket['explore']['like'])
 				
 				try:
-					self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], tag, self.params['media_max_likes'], 
+					self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], self.insta_urls['media'], tag, self.params['media_max_likes'], 
 								self.params['media_min_likes']), self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'explore')
 				
 				except Exception as e:
 					tag = random.choice(self.cache['tags'])
 					self.console_log('Error: %s. Trying again with %s... \,' %(e, tag))
-					self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], tag, self.params['media_max_likes'], 
+					self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], self.insta_urls['media'], tag, self.params['media_max_likes'], 
 								self.params['media_min_likes']), self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'explore')
 				
 				self.console_log('found %s new.' %(len(self.bucket['explore']['like']) - bucket_len))
@@ -783,17 +788,17 @@ class InstaBot:
 		# --- follows random user ---
 
 		user_id = random.choice(list(self.bucket['explore']['follow']))
+		username = self.bucket['user_ids'][user_id]
+		if not username:
+			username = user_id
 
-		self.console_log('\n * Trying to follow %s... \,' %(user_id))
+		self.console_log('\n * Trying to follow %s... \,' %(username))
 
 		if not any(user_id == user for user in self.profile.master_unfollow_list):
-
 			return self.explore_operation('follow', user_id)
 
-		else:
-
-			self.console_log('user has already been unfollowed before!')
-			return [True]
+		self.console_log('user has already been unfollowed before!')
+		return [True]
 
 	def unfollow_user(self):
 
@@ -804,8 +809,18 @@ class InstaBot:
 			if self.time_now() > user[1]:
 			
 				user_id = user[0]
+				username = self.bucket['user_ids'][user[0]]
+				if username:
+					check = self.user_following_back(username)
+					if check[0]:
+						self.console_log('\n * %s followed you back' %(username))
+						self.bucket['explore']['unfollow'].remove(user)
+						self.profile.add_follower(check[1])
+						return [True]
+				else:
+					username = user_id
 
-				self.console_log('\n * Trying to unfollow %s... \,' %(user_id))
+				self.console_log('\n * Trying to unfollow %s... \,' %(username))
 
 				self.profile.remove_follow(user_id)
 				self.profile.master_unfollow_list.append(user_id)
@@ -813,6 +828,17 @@ class InstaBot:
 				return self.explore_operation('unfollow', user)
 
 		return [True]
+
+	def user_following_back(self, username):
+
+		# --- check if the user is following back ---
+
+		user_data = check_user(self.pull, self.insta_urls['user'], username)
+
+		if user_data['follower']:
+			return [True, user_data['data']]
+
+		return [False]
 
 	def like_media(self, media):
 
@@ -828,6 +854,8 @@ class InstaBot:
 
 		try:
 			response = self.explore_operation('like', media_id)
+
+			del self.bucket['codes'][media_id]
 
 			if self.enabled['comment'] and self.time_now() > self.next_operation['comment'] \
 					and self.max_operation['comment'] > self.day_counters['comment']:
@@ -845,6 +873,8 @@ class InstaBot:
 
 		except:
 			raise Exception('while liking - debugging needed.')
+
+		return [True]
 
 	def comment_media(self, media):
 
@@ -877,15 +907,18 @@ class InstaBot:
 		except:
 			raise Exception('while commenting - debugging needed.')
 
+		return [True]
+
 	def explore_operation(self, operation, identifier):
 
 		# --- sends requests post and checks response ---
 
 		self.clean_up_loop_count = 0
 
+		result = [True]
+
 		try:
 			comment = False
-			result = [True]
 			
 			if operation == 'comment':
 				comment = generate_comment()
@@ -920,10 +953,10 @@ class InstaBot:
 			if operation == 'follow':
 				self.bucket['explore']['unfollow'].append([identifier, self.time_now() + self.params['follow_time']])
 
-			return result
-
 		except:
 			raise Exception('in explore operation - debugging needed.')
+
+		return result
 
 	def like_feed(self):
 
@@ -980,8 +1013,6 @@ class InstaBot:
 	def organise_profile(self, data):
 
 		# --- checks news feed for users and adds them to profile object ---
-
-		#print json.dumps(self.profile.profile, indent=3)
 
 		self.console_log('Checking the profiles of those you follow:\n + Checked users:\,')
 
