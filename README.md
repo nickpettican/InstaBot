@@ -1,3 +1,5 @@
+<img src="http://www.nicolaspettican.com/css/img/instabot.png" title="Instabot logo" alt="Instabot logo" width="30%">
+
 # InstaBot 1.1.0
 Automate your Instagram activity with InstaBot - a customisable bot that likes, follows and comments
 
