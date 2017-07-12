@@ -489,7 +489,15 @@ class InstaBot:
 					for user in sorted(self.bucket['explore']['unfollow'], key=itemgetter(1)):
 
 						user_id = user[0]
-						self.console_log('\n * Trying to unfollow %s... \,' %(user_id))
+						
+						try:
+							username = self.bucket['user_ids'][user_id]
+						except:
+							username = False
+
+						if not username:
+							username = user_id
+						self.console_log('\n * Trying to unfollow %s... \,' %(username))
 						
 						response = self.explore_operation('unfollow', user)
 
