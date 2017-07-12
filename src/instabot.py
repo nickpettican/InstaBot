@@ -495,8 +495,16 @@ class InstaBot:
 						except:
 							username = False
 
-						if not username:
+						if username:
+							check = self.user_following_back(username)
+							if check[0]:
+								self.console_log('\n * %s followed you back' %(username))
+								self.bucket['explore']['unfollow'].remove(user)
+								self.profile.add_follower(check[1])
+								continue
+						else:
 							username = user_id
+
 						self.console_log('\n * Trying to unfollow %s... \,' %(username))
 						
 						response = self.explore_operation('unfollow', user)
