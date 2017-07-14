@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ___        InstaBot V 1.1.0 by nickpettican           ___
+# ___        InstaBot V 1.1.1 by nickpettican           ___
 # ___        Automate your Instagram activity           ___
 
 # ___        Copyright 2017 Nicolas Pettican            ___
@@ -24,9 +24,8 @@ from lxml import etree
 import json, itertools, socket
 import numpy as np
 
-def internet_connection(host = '8.8.8.8', port = 53, timeout = 3):
-        
-    # --- check for internet connection ---
+def internet_connection(host = '8.8.8.8', port = 53, timeout = 3):  
+    # check for internet connection
     
     try:
         socket.setdefaulttimeout(timeout)
@@ -36,12 +35,10 @@ def internet_connection(host = '8.8.8.8', port = 53, timeout = 3):
         return False
 
 def return_random_sequence(data, time_in_day):
-                       
-    # --- generates random delay values that add up to time in day ---
+    # generates random delay values that add up to time in day
                     
     if data == 0:
         return [0]
-
     random_values = np.random.random(data)
     random_values /= random_values.sum()
     return [int(i*time_in_day) for i in random_values]
