@@ -1,6 +1,6 @@
 <img src="http://www.nicolaspettican.com/css/img/instabot.png" title="Instabot logo" alt="Instabot logo" width="30%">
 
-# InstaBot 1.1.1
+# InstaBot 1.2.0
 Automate your Instagram activity with InstaBot - a customisable bot that likes, follows and comments
 
 InstaBot is a Python-based automated Instagram bot made for **Social Media Marketing Campaigns** in order to reach the desired audience while saving time and money.
