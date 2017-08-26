@@ -818,7 +818,7 @@ class InstaBot:
                 self.console.log(' * Error: %s' %(e))
             self.bucket['feed']['done'].append(post)
             self.bucket['feed']['like'].remove(post)
-            sleep(10*random())
+            sleep(10*aleatory())
         self.total_counters['like_feed'] += 1
         return [True]
 
