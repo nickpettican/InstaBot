@@ -184,7 +184,7 @@ def generate_comment(comments_list):
     #       ['Cool', 'Sweet', 'Awesome', 'Great'], 
     #       ['😄', '🙌', '👍', '👌', '😊'], 
     #       ['.', '!', '!!', '!!!']))
-    batch = list(itertools.product(comments_list))
+    batch = list(itertools.product(*comments_list))
     return ' '.join(random.choice(batch))
 
 def post_data(pull, url, identifier, comment):
