@@ -48,7 +48,7 @@ class Logger:
 
         self.today = arrow.now().format('DD_MM_YYYY')
         self.log_main = []
-        self.log_file = self.path + 'activity_log_' + self.today + '.csv'
+        self.log_file = self.path + 'activity_log_' + self.today + '.txt'
 
     def log(self, string):
         # write to log file
@@ -97,9 +97,10 @@ class Logger:
         self.backupUnfollows()
 
         try:
-            with open(self.log_file, 'wb') as log:
-                w = writer(log)
-                w.writerows(self.log_main)
+            with open(self.log_file, 'w') as log:
+                for line in self.log_main:
+                    log.writelines(line)
+                    log.write('\n')
 
         except Exception as e:
             print 'Error backing up: %s' %(e)
