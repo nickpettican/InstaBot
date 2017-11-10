@@ -21,7 +21,10 @@
 # ___ and commenting on undesirable media or spam.      ___
 
 from lxml import etree
-import json, itertools, socket, random, time
+from json import loads as toJSON
+from random import random, choice
+from time import sleep
+import itertools
 
 # === INSTAGRAM FUNCTIONS ===
 
@@ -58,18 +61,18 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
         raise Exception('No posts found')
     return bucket
 
-def media_by_tag(pull, tag_url, media_url, tag, media_max_likes, media_min_likes):
+def media_by_tag(browser, tag_url, media_url, tag, media_max_likes, media_min_likes):
     # returns list with the 14 'nodes' (posts) for the tag page 
     
     result = {'posts': False, 'tag': tag}
     try:
-        explore_site = pull.get(tag_url %(tag))
+        explore_site = browser.get(tag_url %(tag))
         tree = etree.HTML(explore_site.text)
         data = return_sharedData(tree)
         if data:
             nodes = data['entry_data']['TagPage'][0]['tag']['media']['nodes']
             result['posts'] = [{'user_id': n['owner']['id'],
-                                'username': return_username(pull, media_url, n['code']),
+                                'username': return_username(browser, media_url, n['code']),
                                 'likes': n['likes']['count'], 
                                 'caption': n['caption'], 
                                 'media_id': n['id'], 
@@ -87,18 +90,18 @@ def return_sharedData(tree):
         try:
             if a.text.startswith(identifier):
                 try:
-                    return json.loads(a.text.replace(identifier, '')[:-1])
+                    return toJSON(a.text.replace(identifier, '')[:-1])
                 except Exception as e:
                     print '\nError returning sharedData JSON: %s' %(e)
         except Exception as e:
             continue
     return False
 
-def return_username(pull, media_url, code):
+def return_username(browser, media_url, code):
     # returns the username from an image
 
     try:
-        media_page = pull.get(media_url %(code))
+        media_page = browser.get(media_url %(code))
         tree = etree.HTML(media_page.text)
         data = return_sharedData(tree)
         return data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['owner']['username']
@@ -106,13 +109,13 @@ def return_username(pull, media_url, code):
         print '\nError obtaining username: %s' %(e)
     return False
 
-def news_feed_media(pull, url, user_id):
+def news_feed_media(browser, url, user_id):
     # returns the latest media on the news feed
     
     posts = False
     nodes = False
     try:
-        news_feed = pull.get(url)
+        news_feed = browser.get(url)
         tree = etree.HTML(news_feed.text)
         data = return_sharedData(tree)
         if data:
@@ -135,7 +138,7 @@ def news_feed_media(pull, url, user_id):
         print '\nError getting new feed data: %s.' %(e)
     return posts
 
-def check_user(pull, url, user):
+def check_user(browser, url, user):
     # checks the users profile to assess if it's fake
 
     result = {
@@ -143,7 +146,7 @@ def check_user(pull, url, user):
         'username': '', 'user_id': '', 'media': '', 'follows': 0, 'followers': 0
     }}
     try:
-        site = pull.get(url %(user))
+        site = browser.get(url %(user))
         tree = etree.HTML(site.text)
         data = return_sharedData(tree)
         user_data = data['entry_data']['ProfilePage'][0]['user']
@@ -174,7 +177,7 @@ def check_user(pull, url, user):
     except Exception as e:
         print '\nError checking user: %s.' %(e)
 
-    time.sleep(5*random.random())
+    sleep(5*random.random())
     return result
     
 def generate_comment(comments_list):
@@ -187,15 +190,15 @@ def generate_comment(comments_list):
     batch = list(itertools.product(*comments_list))
     return ' '.join(random.choice(batch))
 
-def post_data(pull, url, identifier, comment):
+def post_data(browser, url, identifier, comment):
     # sends post request
 
     result = {'response': False, 'identifier': identifier}
     try:
         if comment:
-            response = pull.post(url %(identifier), data= {'comment_text': comment})
+            response = browser.post(url %(identifier), data= {'comment_text': comment})
         else:
-            response = pull.post(url %(identifier))
+            response = browser.post(url %(identifier))
         result['response'] = response
     except:
         pass

@@ -19,7 +19,7 @@ All you need is your username and password and other parameters - no API signup 
 - [x] **Comment** on these posts
 - [x] **Follow** users you want to reach
 - [x] **Unfollow** users who don't follow you back within x hours
-- [x] **Like** posts in your news feed - only those in your friend list
+- [x] **Like** posts in your news feed - only those you want to
 - [x] **Build a `profile` object** with all your followers and users you follow
 
 #### Instabot runs in two modes:
@@ -32,10 +32,10 @@ All you need is your username and password and other parameters - no API signup 
 ## How to install
 
 1. Download and install Python on your computer (a Raspberry Pi will have it pre-installed)
-2. Install dependencies running `pip install name-of-library`. 
+2. Install dependencies running `pip install -r requirements.txt`. 
 3. [Install lxml](http://lxml.de/installation.html)
 4. `Git clone` this repo or download as a ZIP and extract
-5. Add your input
+5. Add your input (see bellow)
 6. Run `python run.py`
 
 ## Your input
@@ -46,9 +46,9 @@ Open the `config` file and insert your credentials and preferences:
 {
 	"username": "username",
 	"password": "password",
-	"friends": "input/friends.csv",
 	"tags": "input/tags.csv",
 	"tags_to_avoid": "input/tags_to_avoid.csv",
+	"friends": "input/friends.csv",
 	"like_news_feed": true,
 	"likes_in_day": 500,
 	"media_max_likes": 50,
@@ -69,9 +69,9 @@ Open the `config` file and insert your credentials and preferences:
 |:---------------------:|:-------------------------:|:------------------------------------------------------------------------	|
 |	username			|	username				|	Your Instagram username													|
 |	password			|	password	 			|	Your Instagram password													|
-|	friends				|	input/friends.csv		|	Friends file - alternatively you can use ['friend1', 'friend2',...]		|
 |	tags 		 		|	input/tags.csv			|	Tags file - alternatively you can use ['tag1', 'tag2', 'tag3',...]		|
 |	tags_to_avoid		|	input/tags_to_avoid.csv	|	Tags to avoid file - you can also use ['tagx', 'tagy',...]				|
+|	friends				|	input/friends.csv		|	Friends file, containing usernames all in one column - alternatively you can use ['friend1', 'friend2',...]		|
 |	like_news_feed		|	true 					|	`true` or `false` whether you want to like your friends' posts			|
 |	likes_in_day	 	|	500						|	Number of likes InstaBot will do in a day 								|
 |	media_max_likes		|	50 						|	Maximum number of likes a post will have for InstaBot to like it 		|
@@ -80,7 +80,7 @@ Open the `config` file and insert your credentials and preferences:
 |	unfollow 			|	true					|	`true` or `false` whether you want to unfollow users					|
 |	follow_time_hours	|	6			 			|	Time (in hours) it will follow these users for 				 			|
 |	comments_in_day		|	0						|	Number of comments it will leave per day								|
-| comments_list   | [["Cool", "Awesome", "Great"], ["😄", "🙌", "👍", "😊"], [".", "!", "!!", "!!!"]] | What words you want shuffled to post comments
+|	comments_list   	| [["Cool", "Awesome", "Great"], ["😄", "🙌", "👍", "😊"], [".", "!", "!!", "!!!"]] | What words you want shuffled to post comments
 |	bot_start_at 		|	07:00 					|	Time when InstaBot will start 											|
 |	bot_stop_at 		|	23:00 					|	Time when InstaBot will stop 										 	|
 
@@ -92,9 +92,10 @@ Tell Instabot how **many posts you want to like per day**. The **maximum** you w
 "likes_in_day": 500
 ```
 
-Set Instabot to **like your friends posts** so you don't have to.
+Set Instabot to **like your friends posts** so you don't have to. Only the friends usernames you included in the friends list will have their posts liked.
 
 ```
+"friends": "input/friends.csv"
 "like_news_feed": true
 ```
 
@@ -154,7 +155,7 @@ Set the amount of time you want to follow users:
 "follow_time_hours": 6
 ```
 
-Set Instabot to unfollow them:
+Set Instabot to unfollow them if they haven't followed you back:
 
 ```
 "unfollow": true
@@ -173,15 +174,9 @@ Make sure you use military time.
 
 ## Instabot is smart
 
-**Before unfollowing** a user, Instabot will **check if that user followed you back**. If that person followed you back, Instabot won't unfollow them. I mean it's only fair. It will also check if users are potentially fake accounts and will unfollow them. If a user was unfollowed recently but followed you back, he/she will be followed back again.
-
-#### Internet connection breaks?
-
-No problem. InstaBot will wait until your internet connection is back in order to continue.
-
-#### Need to shut it down quickly but you're still following lots of people?
-
-No problem. Instabot will save a list of the users it followed and will unfollow them next time it runs.
+* **Before unfollowing** a user, Instabot will **check if that user followed you back**. If that person followed you back, Instabot won't unfollow them. I mean it's only fair. It will also check if users are potentially fake accounts and will unfollow them. If a user was unfollowed recently but followed you back, he/she will be followed back again.
+* **Internet connection breaks?** No problem. InstaBot will wait until your internet connection is back in order to continue.
+* **Need to shut it down quickly but you're still following lots of people?** No problem. Instabot will save a list of the users it followed and will unfollow them next time it's turned on.
 
 ## Motivation
 
@@ -191,18 +186,24 @@ Digital Marketing is becoming more and more complicated, with new platforms comi
 
 If you haven't got a server I find a Raspberry Pi works just fine. All you need to do is follow the installation guide above and run the bot.
 
+## Future of InstaBot
+
+Instabot is written in Python2, meaning it would need to be translated to Python3. Feel free to fork it and do this yourself.
+
+The stats functionality is something I would also like to work on, but feel free to collaborate to make it happen sooner.
+
 ## Warnings
 
-Instagram does not like spam or bulk liking and following, so:
+* Instagram does not like spam or bulk liking and following, so:
 
 > *Keep the likes per day bellow 1000 in a 24 hour period*, meaning if you use the bot for 12 hours a day, I would suggest only setting the likes to 500 or you might risk a ban. 
 
-Don't bulk unfollow: 
+* Don't bulk unfollow: 
 
 > You only get 15 unfollows in a short time period, so if you do a bulk unfollowing on your own, you risk InstaBot not being able to unfollow for a couple of hours.
 
-Choose your tags wisely, and monitor the posts you are liking:
+* Choose your tags wisely, and monitor the posts you are liking:
 
 > In case InstaBot likes unappropriate posts.
 
-Don't rely on InstaBot as your only Social Media Digital Marketeer, Social Media is a two-way conversation, it's a way to gain an audience and talk to them, not a means to sell.
+* Don't rely on InstaBot as your only Social Media Digital Marketeer, Social Media is a two-way conversation, it's a way to gain an audience and talk to them, not a means to sell.

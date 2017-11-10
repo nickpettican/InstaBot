@@ -20,14 +20,14 @@
 # ___ Choose your tags wisely or you may risk liking    ___
 # ___ and commenting on undesirable media or spam.      ___
 
-import requests, arrow
+import arrow
+from requests import Session
 from os import path, makedirs
 from time import sleep
 from random import randint, choice
 from random import random as aleatory
 from requests.exceptions import ConnectionError
 from operator import itemgetter
-from datetime import datetime
 from sys import platform
 
 from logger import Logger
@@ -206,7 +206,7 @@ class InstaBot:
     def init_profile(self):
         # returns data for InstaProfile
 
-        self.profile.import_profile(check_user(self.pull, self.insta_urls['user'], self.params['username']))
+        self.profile.import_profile(check_user(self.browser, self.insta_urls['user'], self.params['username']))
 
     # === TIME OPERATIONS ===
 
@@ -328,12 +328,12 @@ class InstaBot:
         # starts requests session
 
         user_agent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
-        self.pull = requests.Session()
-        self.pull.cookies.update({
+        self.browser = Session()
+        self.browser.cookies.update({
             'sessionid' : '', 'mid' : '', 'ig_pr' : '1', 'ig_vw' : '1920', 
             'csrftoken' : '', 's_network' : '', 'ds_user_id' : ''
         })
-        self.pull.headers.update({
+        self.browser.headers.update({
             'Accept-Encoding' : 'gzip, deflate',
             'Accept-Language' : 'en-US;q=0.6,en;q=0.4',
             'Connection' : 'keep-alive',
@@ -353,13 +353,13 @@ class InstaBot:
         try:     
             self.console.log('\nTrying to sign in as %s... \,' %(self.params['username']))
             # extract cookies from Instagram main page
-            extract = self.pull.get(self.insta_urls['domain'])
-            self.pull.headers.update({'X-CSRFToken': extract.cookies['csrftoken']})
+            extract = self.browser.get(self.insta_urls['domain'])
+            self.browser.headers.update({'X-CSRFToken': extract.cookies['csrftoken']})
             sleep(2)
             # extract csrf token from login requests post
-            extract_login = self.pull.post(self.insta_urls['login'], data = {'username': self.params['username'], 'password': self.params['password']}, allow_redirects = True)
+            extract_login = self.browser.post(self.insta_urls['login'], data = {'username': self.params['username'], 'password': self.params['password']}, allow_redirects = True)
             self.csrf_token = extract_login.cookies['csrftoken']
-            self.pull.headers.update({'X-CSRFToken': self.csrf_token})
+            self.browser.headers.update({'X-CSRFToken': self.csrf_token})
             sleep(2)
             # check if login successful
             if extract_login.ok:
@@ -380,7 +380,7 @@ class InstaBot:
         # checks if user is logged in
 
         try:
-            main_page = self.pull.get(self.insta_urls['domain'])
+            main_page = self.browser.get(self.insta_urls['domain'])
             if self.params['username'] in main_page.text:
                 return True
         except Exception as e:
@@ -391,8 +391,8 @@ class InstaBot:
         # logs the user out
         
         try:
-            log_out_post = self.pull.post(self.insta_urls['logout'], data = {'csrfmiddlewaretoken': self.csrf_token})
-            main_page = self.pull.get(self.insta_urls['domain'])
+            log_out_post = self.browser.post(self.insta_urls['logout'], data = {'csrfmiddlewaretoken': self.csrf_token})
+            main_page = self.browser.get(self.insta_urls['domain'])
             self.console.log('\nSuccessfully logged out!')
             self.logged_in = False
         except:
@@ -613,13 +613,13 @@ class InstaBot:
                 bucket_len = len(self.bucket['explore']['like'])
                 # refill the bucket
                 try:
-                    self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], self.insta_urls['media'], tag, self.params['media_max_likes'], 
+                    self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.browser, self.insta_urls['explore'], self.insta_urls['media'], tag, self.params['media_max_likes'], 
                                 self.params['media_min_likes']), self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'explore')
                 
                 except Exception as e:
                     tag = choice(self.cache['tags'])
                     self.console.log('Error: %s. Trying again with %s... \,' %(e, tag))
-                    self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.pull, self.insta_urls['explore'], self.insta_urls['media'], tag, self.params['media_max_likes'], 
+                    self.bucket = refill(self.profile.profile['user']['user_id'], media_by_tag(self.browser, self.insta_urls['explore'], self.insta_urls['media'], tag, self.params['media_max_likes'], 
                                 self.params['media_min_likes']), self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'explore')
                 
                 self.console.log('found %s new.' %(len(self.bucket['explore']['like']) - bucket_len))
@@ -630,7 +630,7 @@ class InstaBot:
                     self.console.log("\nScrolling through feed for friend's posts... \,")
                     # new feed posts
                     bucket_feed_len = len(self.bucket['feed']['like'])
-                    feed_data = news_feed_media(self.pull, self.insta_urls['domain'], self.profile.profile['user']['user_id'])
+                    feed_data = news_feed_media(self.browser, self.insta_urls['domain'], self.profile.profile['user']['user_id'])
                     self.bucket = refill(self.profile.profile['user']['user_id'], feed_data, self.bucket, self.cache['friends'], self.cache['tags_to_avoid'], self.enabled, 'feed')
                     self.console.log('found %s, %s from friends.' %(len(feed_data), len(self.bucket['feed']['like']) - bucket_feed_len))
                     # organise this data please
@@ -699,7 +699,7 @@ class InstaBot:
     def user_following_back(self, username):
         # check if the user is following back
 
-        user_data = check_user(self.pull, self.insta_urls['user'], username)
+        user_data = check_user(self.browser, self.insta_urls['user'], username)
         if user_data['follower']:
             return [True, user_data['data']]
         return [False]
@@ -759,9 +759,9 @@ class InstaBot:
             # unfollow
             if operation == 'unfollow':
                 self.profile.master_unfollow_list.append(identifier[0])
-                response = post_data(self.pull, self.insta_urls[operation], identifier[0], comment)
+                response = post_data(self.browser, self.insta_urls[operation], identifier[0], comment)
             else:
-                response = post_data(self.pull, self.insta_urls[operation], identifier, comment)
+                response = post_data(self.browser, self.insta_urls[operation], identifier, comment)
             # check if it worked
             if response['response'].ok:
                 self.total_counters[operation] += 1
@@ -803,7 +803,7 @@ class InstaBot:
         for i in range(0, until):
             try:
                 post = self.bucket['feed']['like'][0]
-                liked = post_data(self.pull, self.insta_urls['like'], post[0], False)
+                liked = post_data(self.browser, self.insta_urls['like'], post[0], False)
                 if liked['response'].ok:
                     self.console.log(" * Liked %s's post %s" %(post[1], self.insta_urls['media'] %(self.bucket['codes'][post[0]])))
                 elif liked['response'].status_code == 400:
@@ -828,7 +828,7 @@ class InstaBot:
         self.console.log('Checking the profiles of those you follow:\n + Checked users:\,')
         user_names = list(set([post['username'] for post in data if post['username'] not in self.users_checked_today]))
         if len(user_names) > 1:
-            users_data = [check_user(self.pull, self.insta_urls['user'], user) for user in user_names]
+            users_data = [check_user(self.browser, self.insta_urls['user'], user) for user in user_names]
             for user in users_data[:-1]:
                 self.console.log('%s, \,' %(user['data']['username']))
             self.console.log('%s.' %(users_data[-1]['data']['username']))
@@ -855,7 +855,7 @@ class InstaBot:
                                 self.console.log(' - %s followed you back but was unfollowed - \,' %(user['data']['username']))
                                 del self.bucket['explore']['done']['unfollow'][i]
                                 try:
-                                    response = post_data(self.pull, self.insta_urls['follow'], user['data']['user_id'], False)
+                                    response = post_data(self.browser, self.insta_urls['follow'], user['data']['user_id'], False)
                                     if response['response'].ok:
                                         self.console.log('followed back!')
                                     else:
