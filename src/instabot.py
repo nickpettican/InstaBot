@@ -373,8 +373,8 @@ class InstaBot:
             else:
                 self.console.log('ERROR, could not sign in.')
                 exit('\nCheck you entered the correct details!\n')
-        except:
-            self.console.log('\nERROR while attempting sign in\n')
+        except Exception as e:
+            self.console.log('\nERROR while attempting sign in: %s\n' %e)
 
     def check_login(self):
         # checks if user is logged in

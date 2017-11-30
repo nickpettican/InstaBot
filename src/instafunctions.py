@@ -78,7 +78,7 @@ def media_by_tag(browser, tag_url, media_url, tag, media_max_likes, media_min_li
                                 'media_id': n['id'], 
                                 'url_code': n['code']} 
                                 for n in nodes if media_min_likes <= n['likes']['count'] <= media_max_likes if not n['comments_disabled']]
-    except:
+    except Exception as e:
         print '\nError in obtaining media by tag: %s' %(e)
     return result
 
@@ -177,7 +177,7 @@ def check_user(browser, url, user):
     except Exception as e:
         print '\nError checking user: %s.' %(e)
 
-    sleep(5*random.random())
+    sleep(5*random())
     return result
     
 def generate_comment(comments_list):
@@ -188,7 +188,7 @@ def generate_comment(comments_list):
     #       ['😄', '🙌', '👍', '👌', '😊'], 
     #       ['.', '!', '!!', '!!!']))
     batch = list(itertools.product(*comments_list))
-    return ' '.join(random.choice(batch))
+    return ' '.join(choice(batch))
 
 def post_data(browser, url, identifier, comment):
     # sends post request
