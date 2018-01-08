@@ -4,7 +4,7 @@
 	"friends": "input/friends.csv",
 	"tags": "input/tags.csv",
 	"tags_to_avoid": "input/tags_to_avoid.csv",
-	"like_news_feed": true,
+	"like_news_feed": false,
 	"likes_in_day": 500,
 	"media_max_likes": 50,
 	"media_min_likes": 0,

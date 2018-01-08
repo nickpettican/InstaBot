@@ -70,14 +70,14 @@ def media_by_tag(browser, tag_url, media_url, tag, media_max_likes, media_min_li
         tree = etree.HTML(explore_site.text)
         data = return_sharedData(tree)
         if data:
-            nodes = data['entry_data']['TagPage'][0]['tag']['media']['nodes']
-            result['posts'] = [{'user_id': n['owner']['id'],
-                                'username': return_username(browser, media_url, n['code']),
-                                'likes': n['likes']['count'], 
-                                'caption': n['caption'], 
-                                'media_id': n['id'], 
-                                'url_code': n['code']} 
-                                for n in nodes if media_min_likes <= n['likes']['count'] <= media_max_likes if not n['comments_disabled']]
+            nodes = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']
+            result['posts'] = [{'user_id': n['node']['owner']['id'],
+                                'username': return_username(browser, media_url, n['node']['shortcode']),
+                                'likes': n['node']['edge_liked_by']['count'],
+                                'caption': n['node']['edge_media_to_caption']['edges'][0]['node']['text'],
+                                'media_id': n['node']['id'],
+                                'url_code': n['node']['shortcode']}
+                               for n in nodes if media_min_likes <= n['node']['edge_liked_by']['count'] <= media_max_likes if not n['node']['comments_disabled']]
     except Exception as e:
         print '\nError in obtaining media by tag: %s' %(e)
     return result
