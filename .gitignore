@@ -96,3 +96,5 @@ cache/log
 
 # Mac
 .DS_Store
+*.DS_Store
+.vscode/

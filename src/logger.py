@@ -99,7 +99,7 @@ class Logger:
         try:
             with open(self.log_file, 'w') as log:
                 for line in self.log_main:
-                    log.writelines(line)
+                    log.writelines(line if isinstance(line, list) else [line])
                     log.write('\n')
 
         except Exception as e:

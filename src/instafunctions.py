@@ -20,7 +20,7 @@
 # ___ Choose your tags wisely or you may risk liking    ___
 # ___ and commenting on undesirable media or spam.      ___
 
-from lxml import etree
+from lxml.etree import HTML
 from json import loads as toJSON
 from random import random, choice
 from time import sleep
@@ -67,7 +67,7 @@ def media_by_tag(browser, tag_url, media_url, tag, media_max_likes, media_min_li
     result = {'posts': False, 'tag': tag}
     try:
         explore_site = browser.get(tag_url %(tag))
-        tree = etree.HTML(explore_site.text)
+        tree = HTML(explore_site.text)
         data = return_sharedData(tree)
         if data:
             nodes = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']
@@ -102,7 +102,7 @@ def return_username(browser, media_url, code):
 
     try:
         media_page = browser.get(media_url %(code))
-        tree = etree.HTML(media_page.text)
+        tree = HTML(media_page.text)
         data = return_sharedData(tree)
         return data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['owner']['username']
     except Exception as e:
@@ -116,7 +116,7 @@ def news_feed_media(browser, url, user_id):
     nodes = False
     try:
         news_feed = browser.get(url)
-        tree = etree.HTML(news_feed.text)
+        tree = HTML(news_feed.text)
         data = return_sharedData(tree)
         if data:
             nodes = data['entry_data']['FeedPage'][0]['graphql']['user']['edge_web_feed_timeline']['edges']
@@ -147,20 +147,22 @@ def check_user(browser, url, user):
     }}
     try:
         site = browser.get(url %(user))
-        tree = etree.HTML(site.text)
+        tree = HTML(site.text)
         data = return_sharedData(tree)
-        user_data = data['entry_data']['ProfilePage'][0]['user']
+        user_data = data['entry_data']['ProfilePage'][0]['graphql']['user']
         if user_data:
             if user_data['follows_viewer'] or user_data['has_requested_viewer']:
                 result['follower'] = True
-            if user_data['followed_by']['count'] > 0:
+            if user_data['edge_followed_by']['count'] > 0:
                 try:
-                    if user_data['follows']['count'] / user_data['followed_by']['count'] > 2 and user_data['followed_by'] < 10:
+                    if user_data['edge_follow']['count'] / user_data['edge_followed_by']['count'] > 2 \
+                        and user_data['edge_followed_by']['count'] < 10:
                         result['fake'] = True
                 except ZeroDivisionError:
                     result['fake'] = True
                 try:
-                    if user_data['follows']['count'] / user_data['media']['count'] < 10 and user_data['followed_by']['count'] / user_data['media']['count'] < 10:
+                    if user_data['edge_follow']['count'] / user_data['edge_owner_to_timeline_media']['count'] < 10 \
+                        and user_data['edge_followed_by']['count'] / user_data['edge_owner_to_timeline_media']['count'] < 10:
                         result['active'] = True
                 except ZeroDivisionError:
                     pass
@@ -169,9 +171,9 @@ def check_user(browser, url, user):
             result['data'] = {
                 'username': user_data['username'],
                 'user_id': user_data['id'],
-                'media': user_data['media']['count'],
-                'follows': user_data['follows']['count'],
-                'followers': user_data['followed_by']['count']
+                'media': user_data['edge_owner_to_timeline_media']['count'],
+                'follows': user_data['edge_follow']['count'],
+                'followers': user_data['edge_followed_by']['count']
             }
 
     except Exception as e:
