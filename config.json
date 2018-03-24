@@ -13,7 +13,7 @@
 	"follow_time_hours": 6,
 	"comments_in_day": 0,
 	"comments_list": [["Cool", "Sweet", "Awesome", "Great"],
-						["😄", "🙌", "👍", "👌", "😊"], 
+						[":smile:", ":raised_hands:", ":+1:", ":ok_hand:", ":blush:"], 
 						[".", "!", "!!", "!!!"]],
 	"bot_start_at": "07:00",
 	"bot_stop_at": "23:00"
