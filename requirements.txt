@@ -5,3 +5,4 @@ random
 operator
 json
 itertools
+emoji
