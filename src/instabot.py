@@ -699,7 +699,7 @@ class InstaBot:
 
     def user_following_back(self, username):
         # check if the user is following back
-
+        
         user_data = check_user(self.browser, self.insta_urls['user'], username)
         if user_data['follower']:
             return [True, user_data['data']]
@@ -755,8 +755,9 @@ class InstaBot:
             comment = False
             # comment
             if operation == 'comment':
-                comment = emojize((generate_comment(self.params['comments_list'])), use_aliases=True)
-                self.console.log(comment + '\,')
+                commentString = generate_comment(self.params['comments_list'])
+                self.console.log(commentString + '\,')
+                comment = emojize((commentString), use_aliases=True)
             # unfollow
             if operation == 'unfollow':
                 self.profile.master_unfollow_list.append(identifier[0])
