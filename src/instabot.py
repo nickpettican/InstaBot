@@ -21,6 +21,7 @@
 # ___ and commenting on undesirable media or spam.      ___
 
 import arrow
+from emoji import emojize
 from requests import Session
 from os import path, makedirs
 from time import sleep
@@ -44,7 +45,7 @@ from src.instafunctions import *
 class InstaBot:
 
     def __init__(self, profile, data = {
-        'username': 'user', 
+        'username': 'user',
         'password': 'pwd',
         'friends': 'input/friends.csv',
         'tags': 'input/tags.csv',
@@ -58,7 +59,7 @@ class InstaBot:
         'follow_time_hours': 5,
         'comments_in_day': 0,
         "comments_list": [["Cool", "Sweet", "Awesome", "Great"],
-                        ["😄", "🙌", "👍", "👌", "😊"],
+                        ["ðŸ˜„", "ðŸ™Œ", "ðŸ‘", "ðŸ‘Œ", "ðŸ˜Š"],
                         [".", "!", "!!", "!!!"]],
         'bot_start_at': '07:00',
         'bot_stop_at': '23:00'
@@ -754,7 +755,7 @@ class InstaBot:
             comment = False
             # comment
             if operation == 'comment':
-                comment = generate_comment(self.params['comments_list'])
+                comment = emojize((generate_comment(self.params['comments_list'])), use_aliases=True)
                 self.console.log(comment + '\,')
             # unfollow
             if operation == 'unfollow':

@@ -25,7 +25,6 @@ from json import loads as toJSON
 from random import random, choice
 from time import sleep
 import itertools
-import emoji
 
 # === INSTAGRAM FUNCTIONS ===
 
@@ -188,10 +187,10 @@ def generate_comment(comments_list):
 
     # batch = list(itertools.product(
     #       ['Cool', 'Sweet', 'Awesome', 'Great'],
-    #       ['😄', '🙌', '👍', '👌', '😊'],
+    #       ['ðŸ˜„', 'ðŸ™Œ', 'ðŸ‘', 'ðŸ‘Œ', 'ðŸ˜Š'],
     #       ['.', '!', '!!', '!!!']))
     batch = list(itertools.product(*comments_list))
-    return ' '.join(choice(emoji.emojize(batch)))
+    return ' '.join(choice(batch))
 
 def post_data(browser, url, identifier, comment):
     # sends post request
