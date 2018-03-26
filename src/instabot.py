@@ -439,7 +439,7 @@ class InstaBot:
                             self.profile.remove_follow(user_id)
                             self.banned['400'] = 0
                         # small break
-                        sleep_time = randint(30, 60)
+                        sleep_time = 5
                         print '\tWaiting %s seconds' %(sleep_time)
                         sleep(sleep_time)
                     # in case there's an error and it keeps looping
@@ -465,7 +465,7 @@ class InstaBot:
                 if self.time_now() > self.times['tomorrow_start']:
                     break
                 # just to log the time
-                sleep_time = self.delays['unfollow'][self.day_counters['unfollow']]
+                sleep_time = 5
                 print '\tWaiting %s seconds' %(sleep_time)
                 sleep(sleep_time)
                 # in case there's an error and it keeps looping
@@ -699,10 +699,7 @@ class InstaBot:
 
     def user_following_back(self, username):
         # check if the user is following back
-        
-        user_data = check_user(self.browser, self.insta_urls['user'], username)
-        if user_data['follower']:
-            return [True, user_data['data']]
+
         return [False]
 
     def like_media(self, media):
