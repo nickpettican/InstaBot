@@ -29,15 +29,15 @@ import itertools
 # === INSTAGRAM FUNCTIONS ===
 
 def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
-    # refill the bucket - returns dict with
+    # refill the bucket - returns dict with 
 
     if mode == 'feed' and data:
         for i in data:
             bucket['codes'][i['media_id']] = i['url_code']
         # add feed posts to bucket
         if enabled['like_feed']:
-            bucket['feed']['like'].extend([[i['media_id'], i['username']] for i in data
-                                            if any(n.lower() == i['username'].lower() for n in friends)
+            bucket['feed']['like'].extend([[i['media_id'], i['username']] for i in data 
+                                            if any(n.lower() == i['username'].lower() for n in friends) 
                                             if not user_id == i['user_id']
                                             if not any(n == i['media_id'] for n in bucket['feed']['media_ids'])
                                             if not any(n[0] == i['media_id'] for n in bucket['feed']['done'])
@@ -55,15 +55,15 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
         for param in params:
             if param:
                 bucket[mode][param[0]].update([i[param[1]] for i in data['posts'] if not user_id == i['user_id']
-                                            if not any(i[param[1]] in n for n in bucket[mode]['done'][param[0]])
+                                            if not any(i[param[1]] in n for n in bucket[mode]['done'][param[0]]) 
                                             if not any(n in i['caption'] for n in tags_to_avoid)])
     elif mode == 'explore' and not data['posts']:
         raise Exception('No posts found')
     return bucket
 
 def media_by_tag(browser, tag_url, media_url, tag, media_max_likes, media_min_likes):
-    # returns list with the 14 'nodes' (posts) for the tag page
-
+    # returns list with the 14 'nodes' (posts) for the tag page 
+    
     result = {'posts': False, 'tag': tag}
     try:
         explore_site = browser.get(tag_url %(tag))
@@ -111,7 +111,7 @@ def return_username(browser, media_url, code):
 
 def news_feed_media(browser, url, user_id):
     # returns the latest media on the news feed
-
+    
     posts = False
     nodes = False
     try:
@@ -127,8 +127,8 @@ def news_feed_media(browser, url, user_id):
                     if not n['node']['owner']['id'] == user_id and not n['node']['viewer_has_liked']:
                         post = {'user_id': n['node']['owner']['id'],
                                 'username': n['node']['owner']['username'],
-                                'likes': n['node']['edge_media_preview_like']['count'],
-                                'caption': n['node']['edge_media_to_caption']['edges'][0]['node']['text'],
+                                'likes': n['node']['edge_media_preview_like']['count'], 
+                                'caption': n['node']['edge_media_to_caption']['edges'][0]['node']['text'], 
                                 'media_id': n['node']['id'],
                                 'url_code': n['node']['shortcode']}
                         posts.append(post)
@@ -181,13 +181,13 @@ def check_user(browser, url, user):
 
     sleep(5*random())
     return result
-
+    
 def generate_comment(comments_list):
-    # returns a randomly generated generic comment
+    # returns a randomly generated generic comment 
 
     # batch = list(itertools.product(
-    #       ['Cool', 'Sweet', 'Awesome', 'Great'],
-    #       ['😄', '🙌', '👍', '👌', '😊'],
+    #       ['Cool', 'Sweet', 'Awesome', 'Great'], 
+    #       ['😄', '🙌', '👍', '👌', '😊'], 
     #       ['.', '!', '!!', '!!!']))
     batch = list(itertools.product(*comments_list))
     return ' '.join(choice(batch))
@@ -204,4 +204,4 @@ def post_data(browser, url, identifier, comment):
         result['response'] = response
     except:
         pass
-    return result
+    return result   
