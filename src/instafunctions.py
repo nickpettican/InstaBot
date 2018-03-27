@@ -187,7 +187,7 @@ def generate_comment(comments_list):
 
     # batch = list(itertools.product(
     #       ['Cool', 'Sweet', 'Awesome', 'Great'],
-    #       ['ðŸ˜„', 'ðŸ™Œ', 'ðŸ‘', 'ðŸ‘Œ', 'ðŸ˜Š'],
+    #       ['😄', '🙌', '👍', '👌', '😊'],
     #       ['.', '!', '!!', '!!!']))
     batch = list(itertools.product(*comments_list))
     return ' '.join(choice(batch))
