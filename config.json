@@ -11,10 +11,61 @@
 	"follow_in_day": 50,
 	"unfollow": true,
 	"follow_time_hours": 6,
-	"comments_in_day": 0,
-	"comments_list": [["Cool", "Sweet", "Awesome", "Great"],
-						["😄", "🙌", "👍", "👌", "😊"], 
-						[".", "!", "!!", "!!!"]],
+	"comments_in_day": 50,
+	"comments_list": [
+						[
+							"Cool", "Awesome", "Great", "Amazing", "Fantastic", "Excellent", "Perfect", "Nice",
+							"cool", "awesome", "great", "amazing", "fantastic","excellent", "perfect", "nice"
+						],
+
+						[
+							"pic!", "pic!!", "pic!!!",
+							"pic :thumbsup:", "pic :raised_hands:", "pic :smile:", "pic :smiley:", "pic :ok_hand:",
+							"pic :clap:", "pic :muscle:", "pic :top:", "pic :star:", "pic :star2:", "pic :v:", "pic :open_mouth:",
+
+							"picture!", "picture!!", "picture!!!",
+							"picture :thumbsup:", "picture :raised_hands:", "picture :smile:", "picture :smiley:", "picture :ok_hand:",
+							"picture :clap:", "picture :muscle:", "picture :top:", "picture :star:", "picture :star2:", "picture :v:", "picture :open_mouth:",
+
+							"composition!", "composition!!", "composition!!!",
+							"composition :thumbsup:", "composition :raised_hands:", "composition :smile:", "composition :smiley:", "composition :ok_hand:",
+							"composition :clap:", "composition :muscle:", "composition :top:", "composition :star:", "composition :star2:", "composition :v:", "composition :open_mouth:",
+
+							"!", "!!", "!!!",
+							":thumbsup:", ":raised_hands:", ":smile:", ":smiley:", ":ok_hand:",
+							":clap:", ":muscle:", ":top:", ":star:", ":star2:", ":v:", ":open_mouth:"
+						],
+
+ 						[
+							":thumbsup:", ":raised_hands:", ":smile:", ":smiley:", ":ok_hand:",
+							":clap:", ":muscle:", ":top:", ":star:", ":star2:", ":v:", ":open_mouth:",
+
+							"And gorgeous collection!", "And gorgeous collection!!", "And gorgeous collection!!!",
+							"And gorgeous collection :thumbsup:", "And gorgeous collection :raised_hands:", "And gorgeous collection :smile:", "And gorgeous collection :smiley:", "And gorgeous collection :ok_hand:",
+							"And gorgeous collection :clap:", "And gorgeous collection :muscle:", "And gorgeous collection :top:", "And gorgeous collection :star:", "And gorgeous collection :star2:", "And gorgeous collection :v:", "And gorgeous collection :open_mouth:",
+
+							" "
+						],
+
+ 						[
+							":thumbsup:", ":raised_hands:", ":smile:", ":smiley:", ":ok_hand:",
+							":clap:", ":muscle:", ":top:", ":star:", ":star2:", ":v:", ":open_mouth:",
+
+							" "
+						],
+
+ 						[
+							"Keep it up!", "Keep it up!!", "Keep it up!!!",
+							"Keep it up :thumbsup:", "Keep it up :raised_hands:", "Keep it up :smile:", "Keep it up :smiley:", "Keep it up :ok_hand:",
+							"Keep it up :clap:", "Keep it up :muscle:", "Keep it up :top:", "Keep it up :star:", "Keep it up :star2:", "Keep it up :v:", "Keep it up :open_mouth:",
+
+							"Keep up the good work!", "Keep up the good work!!", "Keep up the good work!!!",
+							"Keep up the good work :thumbsup:", "Keep up the good work :raised_hands:", "Keep up the good work :smile:", "Keep up the good work :smiley:", "Keep up the good work :ok_hand:",
+							"Keep up the good work :clap:", "Keep up the good work :muscle:", "Keep up the good work :top:", "Keep up the good work :star:", "Keep up the good work :star2:", "Keep up the good work :v:", "Keep up the good work :open_mouth:",
+
+							" "
+						]
+					],
 	"bot_start_at": "07:00",
 	"bot_stop_at": "23:00"
 }
