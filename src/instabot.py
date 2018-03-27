@@ -701,6 +701,9 @@ class InstaBot:
     def user_following_back(self, username):
         # check if the user is following back
 
+        user_data = check_user(self.browser, self.insta_urls['user'], username)
+        if user_data['follower']:
+            return [True, user_data['data']]
         return [False]
 
     def like_media(self, media):
