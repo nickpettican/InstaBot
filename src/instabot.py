@@ -757,7 +757,7 @@ class InstaBot:
             # comment
             if operation == 'comment':
                 commentString = generate_comment(self.params['comments_list'])
-                self.console.log('\n\n\tComment: "' + commentString + '" \n')
+                self.console.log('\n\n\tComment: "' + commentString + '" \,')
                 comment = emojize((commentString), use_aliases=True)
             # unfollow
             if operation == 'unfollow':
