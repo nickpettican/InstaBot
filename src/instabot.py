@@ -329,15 +329,7 @@ class InstaBot:
     def start_requests(self):
         # starts requests session
 
-        DEVICE_SETTINTS = {
-            'manufacturer': 'samsung',
-            'model': 'herolte',
-            'device': 'SM-G930F',
-            'android_version': 23,
-            'android_release': '6.0.1'
-        }
-        user_agent = 'Instagram 10.26.0 Android ({android_version}/{android_release}; 640dpi; 1440x2560; {manufacturer}; {device}; {model}; samsungexynos8890; en_US)'.format(
-            **DEVICE_SETTINTS)
+        user_agent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
 
         self.browser = Session()
         self.browser.cookies.update({
@@ -345,15 +337,16 @@ class InstaBot:
             'csrftoken' : '', 's_network' : '', 'ds_user_id' : ''
         })
         self.browser.headers.update({
-            'Accept': '*/*',
-            'Accept-Language' : 'en-US',
-            'Cookie2': '$Version=1',
-            'Connection' : 'close',
+            'Accept-Encoding' : 'gzip, deflate',
+            'Accept-Language' : 'en-US;q=0.6,en;q=0.4',
+            'Connection' : 'keep-alive',
             'Content-Length' : '0',
             'Host' : 'www.instagram.com',
             'Origin' : 'https://www.instagram.com',
             'Referer' : 'https://www.instagram.com/',
             'User-Agent' : user_agent,
+            'X-Instagram-AJAX' : '1',
+            'X-Requested-With' : 'XMLHttpRequest'
 
         })
 
