@@ -21,6 +21,7 @@
 # ___ and commenting on undesirable media or spam.      ___
 
 import arrow
+from datetime import datetime
 from emoji import emojize
 from requests import Session
 from os import path, makedirs
@@ -257,15 +258,15 @@ class InstaBot:
         # set the operation times to iterate
 
         self.next_operation = {
-            'like': self.time_now() + 40,
-            'follow': self.time_now() + 60,
-            'comment': self.time_now() + 40,
-            'unfollow': self.time_now() + self.params['follow_time'],
-            'like_feed': self.time_now()
+            'like': (datetime.now() - datetime(1970, 1, 1)).total_seconds() + 40,
+            'follow': (datetime.now() - datetime(1970, 1, 1)).total_seconds() + 60,
+            'comment': (datetime.now() - datetime(1970, 1, 1)).total_seconds() + 40,
+            'unfollow': (datetime.now() - datetime(1970, 1, 1)).total_seconds() + self.params['follow_time'],
+            'like_feed': (datetime.now() - datetime(1970, 1, 1)).total_seconds()
         }
         if self.bucket['explore']['unfollow']:
             self.next_operation['unfollow'] = min(i[1] for i in self.bucket['explore']['unfollow'])
-        self.next_check_feed = self.time_now()
+        self.next_check_feed = (datetime.now() - datetime(1970, 1, 1)).total_seconds()
         self.max_operation = {
             'like': self.params['likes_in_day'],
             'follow': self.params['follow_in_day'],
@@ -285,11 +286,11 @@ class InstaBot:
         # organises the operations for the day
 
         if not self.run_all_day:
-            if self.times['start_bot'] < self.time_now() < self.times['stop_bot']:
+            if self.times['start_bot'] < (datetime.now() - datetime(1970, 1, 1)).total_seconds() < self.times['stop_bot']:
                 for action, enabled in self.enabled.items():
                     if enabled:
                         tmp_time = self.times['start_bot']
-                        while tmp_time < self.time_now():
+                        while tmp_time < (datetime.now() - datetime(1970, 1, 1)).total_seconds():
                             if self.day_counters[action] < self.max_operation[action]:
                                 tmp_time = tmp_time + self.delays[action][self.day_counters[action]]
                                 self.day_counters[action] += 1
@@ -329,6 +330,7 @@ class InstaBot:
         # starts requests session
 
         user_agent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+
         self.browser = Session()
         self.browser.cookies.update({
             'sessionid' : '', 'mid' : '', 'ig_pr' : '1', 'ig_vw' : '1920',
@@ -345,6 +347,7 @@ class InstaBot:
             'User-Agent' : user_agent,
             'X-Instagram-AJAX' : '1',
             'X-Requested-With' : 'XMLHttpRequest'
+
         })
 
     def log_in(self):
@@ -369,11 +372,31 @@ class InstaBot:
                     self.logged_in = True
                     sleep(2)
                 else:
-                    self.console.log('\nERROR, could not sign in.')
+
+                    self.console.log('\nError signing in.\,')
+                    self.console.log('Request returns %s error.' %(extract_login.status_code) )
+
+                    response_data = json.loads(extract_login.text)
+                    self.console.log('\nInstagram error message: %s' %(response_data.get('message')) )
+                    if response_data.get('error_type'):
+                        self.console.log('\nError type: %s' %(response_data.get('error_type')) )
+
                     exit('\nCheck you entered the correct details!\n')
+
             else:
-                self.console.log('\nERROR, could not sign in.')
+
+                self.console.log('\nError signing in.\,')
+                self.console.log('Request returns %s error.' %(extract_login.status_code) )
+
+                response_data = json.loads(extract_login.text)
+                self.console.log('\nInstagram error message: %s' %(response_data.get('message')) )
+                if (response_data.get('message') == 'checkpoint_required'):
+                    self.console.log('\nCheckpoint_url: %s' %(response_data.get('checkpoint_url')) )
+                if response_data.get('error_type'):
+                    self.console.log('\nError type: %s' %(response_data.get('error_type')) )
+
                 exit('\nCheck you entered the correct details!\n')
+
         except Exception as e:
             self.console.log('\nERROR while attempting sign in: %s\n' %e)
 
@@ -462,7 +485,7 @@ class InstaBot:
                         self.banned_sleep()
                 if response[0]:
                     self.banned['400'] = 0
-                if self.time_now() > self.times['tomorrow_start']:
+                if (datetime.now() - datetime(1970, 1, 1)).total_seconds() > self.times['tomorrow_start']:
                     break
                 # just to log the time
                 sleep_time = self.delays['unfollow'][self.day_counters['unfollow']]
@@ -502,10 +525,10 @@ class InstaBot:
         sleep(1*aleatory())
         # check if out of hours
         if not self.run_all_day:
-            if self.times['start_bot'] > self.time_now():
-                self.console.log('\nOut of hours... sleeping until %s' %(self.params['bot_start_at']))
-                #print self.times['start_bot'], self.time_now(), self.times['tomorrow_start']
-                sleep(int(self.times['start_bot'] - self.time_now()))
+            if self.times['start_bot'] > (datetime.now() - datetime(1970, 1, 1)).total_seconds():
+                self.console.log('\n%s => Stopping time reached. Pausing Bot until %s' %(self.params['bot_stop_at'], self.params['bot_start_at']))
+                #print self.times['start_bot'], (datetime.now() - datetime(1970, 1, 1)).total_seconds(), self.times['tomorrow_start']
+                sleep(int(self.times['start_bot'] - (datetime.now() - datetime(1970, 1, 1)).total_seconds()))
         # main while loop
         while True:
             dc = self.day_counters
@@ -524,18 +547,18 @@ class InstaBot:
                             self.starting_operations()
                     continue
                 # hour to hour mode
-                while self.times['start_bot'] < self.time_now() < self.times['stop_bot']:
+                while self.times['start_bot'] < (datetime.now() - datetime(1970, 1, 1)).total_seconds() < self.times['stop_bot']:
                     # where the magic happens
                     self.main_loop()
                 # if the loop is broken, finish up
                 self.clean_up(on_exit=False, statement='\nFinishing operations...')
                 sleep(10)
                 self.console.log('\nSleeping until %s' %(self.params['bot_start_at']))
-                sleep_time = int(self.times['tomorrow_start'] - self.time_now())
+                sleep_time = int(self.times['tomorrow_start'] - (datetime.now() - datetime(1970, 1, 1)).total_seconds())
                 if sleep_time > 0:
                     sleep(sleep_time)
                 # check if it's the next day
-                if self.time_now() > self.times['tomorrow_start']:
+                if (datetime.now() - datetime(1970, 1, 1)).total_seconds() > self.times['tomorrow_start']:
                     self.reset_day_counters()
                     self.starting_operations()
 
@@ -555,7 +578,7 @@ class InstaBot:
                 self.console.log('Error: %s' %(e))
 
             except KeyboardInterrupt:
-                self.clean_up(on_exit=True, statement='\nStopping Bot. Please wait for cleaning follows...')
+                self.clean_up(on_exit=True, statement='\n\nStopping Bot. Please wait for cleaning follows...')
                 self.console.log('\nCleanup Done. Logging out...')
                 self.log_out()
 
@@ -569,7 +592,7 @@ class InstaBot:
         # run operations
         for operation, enabled in self.enabled.items():
             if enabled:
-                if self.next_operation[operation] < self.time_now() \
+                if self.next_operation[operation] < (datetime.now() - datetime(1970, 1, 1)).total_seconds() \
                     and self.max_operation[operation] > self.day_counters[operation] \
                     and self.max_operation['all'] > self.day_counters['all']:
                     # if unfollow, pick the user that was followed the soonest
@@ -592,7 +615,7 @@ class InstaBot:
                         self.banned['400'] = 0
             # add sleep time
             minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
-            sleep_time = minim - self.time_now()
+            sleep_time = minim - (datetime.now() - datetime(1970, 1, 1)).total_seconds()
             if sleep_time > 0:
                 print '\n\t--- Delaying %s seconds ---' %(sleep_time)
                 sleep(sleep_time)
@@ -627,7 +650,7 @@ class InstaBot:
                 self.console.log('found %s new.' %(len(self.bucket['explore']['like']) - bucket_len))
             # refill if the bucket is low
             if len(self.bucket['feed']['like']) < 5:
-                if self.time_now() > self.next_check_feed:
+                if (datetime.now() - datetime(1970, 1, 1)).total_seconds() > self.next_check_feed:
                     self.next_check_feed += 5*60
                     self.console.log("\nScrolling through feed for friend's posts: \,")
                     # new feed posts
@@ -639,7 +662,7 @@ class InstaBot:
                     self.organise_profile(feed_data)
             # give it some sleep time
             minim = min(value for key, value in self.next_operation.items() if self.enabled[key])
-            sleep_time = minim - self.time_now()
+            sleep_time = minim - (datetime.now() - datetime(1970, 1, 1)).total_seconds()
             if sleep_time > 0:
                 print '\n\t--- Delaying %s seconds ---' %(sleep_time)
                 sleep(sleep_time)
@@ -681,7 +704,7 @@ class InstaBot:
         # unfollows user
 
         for user in self.bucket['explore']['unfollow']:
-            if self.time_now() > user[1]:
+            if (datetime.now() - datetime(1970, 1, 1)).total_seconds() > user[1]:
                 user_id = user[0]
                 username = self.bucket['user_ids'][user[0]]
                 if username:
@@ -715,7 +738,7 @@ class InstaBot:
         try:
             response = self.explore_operation('like', media_id)
             del self.bucket['codes'][media_id]
-            if self.enabled['comment'] and self.time_now() > self.next_operation['comment'] \
+            if self.enabled['comment'] and (datetime.now() - datetime(1970, 1, 1)).total_seconds() > self.next_operation['comment'] \
                     and self.max_operation['comment'] > self.day_counters['comment']:
                 self.next_operation['comment'] = self.next_operation['comment'] + self.delays['comment'][self.day_counters['comment']]
                 self.day_counters['all'] += 1
@@ -757,7 +780,7 @@ class InstaBot:
             # comment
             if operation == 'comment':
                 commentString = generate_comment(self.params['comments_list'])
-                self.console.log('\n\n\tComment: "' + commentString + '" \,')
+                self.console.log('\n\n\tComment: "' + commentString + '" \n')
                 comment = emojize((commentString), use_aliases=True)
             # unfollow
             if operation == 'unfollow':
@@ -785,7 +808,7 @@ class InstaBot:
                 self.bucket['explore']['done'][operation].append(identifier)
             if operation == 'follow':
                 # add with time to unfollow
-                self.bucket['explore']['unfollow'].append([identifier, self.time_now() + self.params['follow_time']])
+                self.bucket['explore']['unfollow'].append([identifier, (datetime.now() - datetime(1970, 1, 1)).total_seconds() + self.params['follow_time']])
         except Exception as e:
             raise Exception('\nin explore operation - debugging needed: %s' %(e))
         return result
