@@ -20,12 +20,15 @@
 # ___ Choose your tags wisely or you may risk liking    ___
 # ___ and commenting on undesirable media or spam.      ___
 
-import json, os, csv
+import json
+import os
+import csv
 
 # === Instagram Profile ===
 
+
 class InstaProfile:
-    # This object will contain the followers and followed users that 
+    # This object will contain the followers and followed users that
     # InstaBot picks up along the way in order to operate efficiently
 
     def __init__(self, path='cache/', params=''):
@@ -38,7 +41,9 @@ class InstaProfile:
     def import_unfollow_list(self):
         # imports the master unfollow list
 
-        self.master_unfollow_list = [line for line in open(self.unf_list_path, 'r')]
+        self.master_unfollow_list = [
+            line for line in open(
+                self.unf_list_path, 'r')]
 
     def save_unfollow_list(self):
         # saves the master unfollow list
@@ -104,7 +109,7 @@ class InstaProfile:
                 break
 
         self.save_profile()
-        
+
     def profile_template(self):
         # returns template of profile object
 

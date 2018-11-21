@@ -1,6 +1,6 @@
 <img src="http://www.nicolaspettican.com/css/img/instabot.png" title="Instabot logo" alt="Instabot logo" width="30%">
 
-# InstaBot 1.2.0
+# InstaBot 1.3.0
 Automate your Instagram activity with InstaBot - a customisable bot that likes, follows and comments
 
 InstaBot is a Python-based automated Instagram bot made for **Social Media Marketing Campaigns** in order to reach the desired audience while saving time and money.
@@ -46,6 +46,7 @@ Open the `config` file and insert your credentials and preferences:
 {
 	"username": "username",
 	"password": "password",
+	"timezone": 0,
 	"tags": "input/tags.csv",
 	"tags_to_avoid": "input/tags_to_avoid.csv",
 	"friends": "input/friends.csv",
@@ -69,6 +70,7 @@ Open the `config` file and insert your credentials and preferences:
 |:---------------------:|:-------------------------:|:------------------------------------------------------------------------	|
 |	username			|	username				|	Your Instagram username													|
 |	password			|	password	 			|	Your Instagram password													|
+|	timezone			|	0	 			|	Your timezone code, in order to run it at your local time													|
 |	tags 		 		|	input/tags.csv			|	Tags file - alternatively you can use ['tag1', 'tag2', 'tag3',...]		|
 |	tags_to_avoid		|	input/tags_to_avoid.csv	|	Tags to avoid file - you can also use ['tagx', 'tagy',...]				|
 |	friends				|	input/friends.csv		|	Friends file, containing usernames all in one column - alternatively you can use ['friend1', 'friend2',...]		|

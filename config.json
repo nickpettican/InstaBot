@@ -1,6 +1,7 @@
 {
 	"username": "username",
 	"password": "password",
+	"timezone": 0,
 	"friends": "input/friends.csv",
 	"tags": "input/tags.csv",
 	"tags_to_avoid": "input/tags_to_avoid.csv",
@@ -11,7 +12,7 @@
 	"follow_in_day": 50,
 	"unfollow": true,
 	"follow_time_hours": 6,
-	"comments_in_day": 50,
+	"comments_in_day": 0,
 	"comments_list": [
 						[
 							"Cool", "Awesome", "Great", "Amazing", "Fantastic", "Excellent", "Perfect", "Nice",

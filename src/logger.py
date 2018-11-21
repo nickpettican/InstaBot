@@ -20,9 +20,10 @@
 # ___ Choose your tags wisely or you may risk liking    ___
 # ___ and commenting on undesirable media or spam.      ___
 
-import arrow
+import datetime
 from csv import writer
 from os import makedirs, path
+
 
 class Logger:
 
@@ -34,8 +35,8 @@ class Logger:
         self.new_line = True
         self.backupUnfollows = backupUnfollows
         self.bucketUnfollow = bucketUnfollow
-        self.today = arrow.now().format('DD_MM_YYYY')
-        
+        self.today = datetime.datetime.today().strftime('%d-%m-%Y')
+
         if not path.isdir(self.path):
             makedirs(self.path)
 
@@ -46,7 +47,7 @@ class Logger:
     def init_log_name(self):
         # change log file name
 
-        self.today = arrow.now().format('DD_MM_YYYY')
+        self.today = datetime.datetime.today().strftime('%d-%m-%Y')
         self.log_main = []
         self.log_file = self.path + 'activity_log_' + self.today + '.txt'
 
@@ -54,26 +55,27 @@ class Logger:
         # write to log file
 
         try:
-            if self.today != arrow.now().format('DD_MM_YYYY'):
+            if self.today != datetime.datetime.today().strftime('%d-%m-%Y'):
                 self.init_log_name()
 
             self.backup()
 
             if string.endswith('\,'):
                 log = string.replace('\,', '')
-                
+
                 if self.new_line or log.startswith('\n'):
                     if log.startswith('\n'):
                         log = log.replace('\n', '')
                         print '\n',
-                    log = arrow.now().format('[ YYYY-MM-DD HH:mm:ss ] ') + log
+                    log = datetime.datetime.today().strftime(
+                        '[ %Y-%m-%d %H:%m:%s ] ') + log
                 print log,
 
                 self.new_line = False
                 if self.log_temp:
                     try:
                         self.log_temp += log
-                    except:
+                    except BaseException:
                         pass
                 else:
                     self.log_temp = log
@@ -89,7 +91,7 @@ class Logger:
             self.log_main.append([string.strip()])
 
         except Exception as e:
-            print 'Error while logging: %s' %(e)
+            print 'Error while logging: %s' % (e)
 
     def backup(self):
         # backs up the log
@@ -103,11 +105,11 @@ class Logger:
                     log.write('\n')
 
         except Exception as e:
-            print 'Error backing up: %s' %(e)
+            print 'Error backing up: %s' % (e)
 
         try:
             with open('cache/followlist.csv', 'wb') as backup:
                 w = writer(backup)
                 w.writerows(self.bucketUnfollow)
         except Exception as e:
-            print 'Error while saving backup follow list: %s' %(e)
+            print 'Error while saving backup follow list: %s' % (e)
