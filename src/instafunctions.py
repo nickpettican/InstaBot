@@ -21,7 +21,7 @@
 # ___ and commenting on undesirable media or spam.      ___
 
 from lxml.etree import HTML
-from json import loads as toJSON, dump
+from json import loads as toJSON
 from random import random, choice
 from time import sleep
 import itertools
@@ -110,7 +110,7 @@ def media_by_tag(
                     browser,
                     media_url),
                 nodes)
-            result['posts'] = list(filter(lambda p: p is not None, posts))
+            result['posts'] = [p for p in posts if p is not None]
     except Exception as e:
         print '\nError in obtaining media by tag: %s' % (e)
     return result
@@ -189,7 +189,7 @@ def news_feed_media(browser, url, user_id):
                 posts = map(
                     lambda n: get_feed_node_post_data(
                         n['node'], user_id), nodes)
-                return list(filter(lambda p: p is not None, posts))
+                return [p for p in posts if p is not None]
     except Exception as e:
         print '\nError getting new feed data: %s.' % (e)
     return False

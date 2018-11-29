@@ -21,6 +21,7 @@
 # ___ and commenting on undesirable media or spam.      ___
 
 from datetime import datetime, timedelta
+from json import loads as toJSON
 from emoji import emojize
 from requests import Session
 from os import path, makedirs
@@ -28,7 +29,6 @@ from time import sleep, time, mktime
 from random import random as aleatory, randint, choice
 from requests.exceptions import ConnectionError
 from operator import itemgetter
-from sys import platform
 
 from logger import Logger
 from src.miscellaneous import *
@@ -499,7 +499,7 @@ class InstaBot:
                         'Request returns %s but it seems it didn\'t work.' %
                         (extract_login.status_code))
 
-                    response_data = json.loads(extract_login.text)
+                    response_data = toJSON(extract_login.text)
                     self.logger.log(
                         '\nInstagram error message: %s' %
                         (response_data.get('message')))
@@ -517,7 +517,7 @@ class InstaBot:
                     'Request returns %s error.' %
                     (extract_login.status_code))
 
-                response_data = json.loads(extract_login.text)
+                response_data = toJSON(extract_login.text)
                 self.logger.log(
                     '\nInstagram error message: %s' %
                     (response_data.get('message')))
@@ -555,10 +555,10 @@ class InstaBot:
         # logs the user out
 
         try:
-            log_out_post = self.browser.post(
+            self.browser.post(
                 self.insta_urls['logout'], data={
                     'csrfmiddlewaretoken': self.csrf_token})
-            main_page = self.browser.get(self.insta_urls['domain'])
+            self.browser.get(self.insta_urls['domain'])
             self.logger.log('\nSuccessfully logged out!')
             self.logged_in = False
         except Exception as err:
@@ -669,7 +669,7 @@ class InstaBot:
         # unfollow previous session's follows
         if self.cache['unfollow']:
             if len(self.cache['unfollow']) >= 1:
-                add = [self.bucket['explore']['unfollow'].append(
+                [self.bucket['explore']['unfollow'].append(
                     [user[0], i]) for i, user in enumerate(self.cache['unfollow'])]
                 self.clean_up(
                     on_exit=True,

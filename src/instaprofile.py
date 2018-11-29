@@ -26,6 +26,20 @@ import csv
 
 # === Instagram Profile ===
 
+def profile_template():
+    # returns template of profile object
+
+    return {
+        'user': {
+            'username': '',
+            'user_id': '',
+            'media': 0,
+            'follows': 0,
+            'followers': 0
+        },
+        'followers': [],
+        'follows': []
+    }
 
 class InstaProfile:
     # This object will contain the followers and followed users that
@@ -60,7 +74,7 @@ class InstaProfile:
                 self.profile = json.load(data_file)
 
         else:
-            self.profile = self.profile_template()
+            self.profile = profile_template()
             self.populate_profile(user)
 
     def save_profile(self):
@@ -109,18 +123,3 @@ class InstaProfile:
                 break
 
         self.save_profile()
-
-    def profile_template(self):
-        # returns template of profile object
-
-        return {
-            'user': {
-                'username': '',
-                'user_id': '',
-                'media': 0,
-                'follows': 0,
-                'followers': 0
-            },
-            'followers': [],
-            'follows': []
-        }

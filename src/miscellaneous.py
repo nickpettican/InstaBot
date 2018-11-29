@@ -20,9 +20,6 @@
 # ___ Choose your tags wisely or you may risk liking    ___
 # ___ and commenting on undesirable media or spam.      ___
 
-from lxml import etree
-import json
-import itertools
 import socket
 import numpy as np
 
