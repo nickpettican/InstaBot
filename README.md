@@ -6,19 +6,28 @@
 
 -   [InstaBot 1.3.0](#instabot-130)
     -   [Requirements](#requirements)
+
     -   [In a nutshell](#in-a-nutshell)
-        - [InstaBot will](#instabot-will)
-        - [Instabot runs in two modes](#instabot-runs-in-two-modes)
+        -   [InstaBot will](#instabot-will)
+        -   [Instabot runs in two modes](#instabot-runs-in-two-modes)
+
     -   [How to install](#how-to-install)
+
     -   [Your input](#your-input)
         -   [Set likes](#set-likes)
         -   [Set comments](#set-comments)
         -   [Follow and unfollow](#follow-and-unfollow)
+
     -   [Set Instabot to run during the day](#set-instabot-to-run-during-the-day)
+
     -   [Instabot is smart](#instabot-is-smart)
+
     -   [Motivation](#motivation)
+
     -   [Server](#server)
+
     -   [Future of InstaBot](#future-of-instabot)
+
     -   [Warnings](#warnings)
 
 Automate your Instagram activity with InstaBot - a customisable bot that likes, follows and comments
@@ -33,7 +42,7 @@ All you need is your username and password and other parameters - no API signup 
 
 ## In a nutshell
 
-#### InstaBot will
+### InstaBot will
 
 -   [x] **Like** posts of users you want to reach
 -   [x] **Comment** on these posts
@@ -42,7 +51,7 @@ All you need is your username and password and other parameters - no API signup 
 -   [x] **Like** posts in your news feed - only those you want to
 -   [x] **Build a `profile` object** with all your followers and users you follow
 
-#### Instabot runs in two modes
+### Instabot runs in two modes
 
 -   From XX:XX to YY:YY
 -   All day (24/7)

@@ -180,9 +180,7 @@ def news_feed_media(browser, url, user_id):
         if data:
             nodes = data['user']['edge_web_feed_timeline']['edges']
             if nodes:
-                posts = map(
-                    lambda n: get_feed_node_post_data(
-                        n['node'], user_id), nodes)
+                posts = [get_feed_node_post_data(n['node'], user_id) for n in nodes]
                 return [p for p in posts if p is not None]
     except Exception as e:
         print '\nError getting new feed data: %s.' % (e)
