@@ -102,14 +102,8 @@ def media_by_tag(
         data = return_sharedData(tree)
         if data:
             nodes = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']
-            posts = map(
-                lambda n: get_node_post_data(
-                    n['node'],
-                    media_min_likes,
-                    media_max_likes,
-                    browser,
-                    media_url),
-                nodes)
+            posts = [get_node_post_data(
+                n['node'], media_min_likes, media_max_likes, browser, media_url) for n in nodes]
             result['posts'] = [p for p in posts if p is not None]
     except Exception as e:
         print '\nError in obtaining media by tag: %s' % (e)

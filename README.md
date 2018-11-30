@@ -7,8 +7,8 @@
 -   [InstaBot 1.3.0](#instabot-130)
     -   [Requirements](#requirements)
     -   [In a nutshell](#in-a-nutshell)
-              \- [InstaBot will](#instabot-will)
-              \- [Instabot runs in two modes](#instabot-runs-in-two-modes)
+        - [InstaBot will](#instabot-will)
+        - [Instabot runs in two modes](#instabot-runs-in-two-modes)
     -   [How to install](#how-to-install)
     -   [Your input](#your-input)
         -   [Set likes](#set-likes)
@@ -84,25 +84,25 @@ Open the `config` file and insert your credentials and preferences:
     	"bot_stop_at": "23:00"
     }
 
-|     Variables     |                                      Defaults                                      | Explanation                                                                                                 |
-| :---------------: | :--------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------- |
-|      username     |                                      username                                      | Your Instagram username                                                                                     |
-|      password     |                                      password                                      | Your Instagram password                                                                                     |
-|      timezone     |                                          0                                         | Your timezone code, in order to run it at your local time                                                   |
-|        tags       |                                   input/tags.csv                                   | Tags file - alternatively you can use ['tag1', 'tag2', 'tag3',...]                                          |
-|   tags_to_avoid   |                               input/tags_to_avoid.csv                              | Tags to avoid file - you can also use ['tagx', 'tagy',...]                                                  |
-|      friends      |                                  input/friends.csv                                 | Friends file, containing usernames all in one column - alternatively you can use ['friend1', 'friend2',...] |
-|   like_news_feed  |                                        true                                        | `true` or `false` whether you want to like your friends' posts                                              |
-|    likes_in_day   |                                         500                                        | Number of likes InstaBot will do in a day                                                                   |
-|  media_max_likes  |                                         50                                         | Maximum number of likes a post will have for InstaBot to like it                                            |
-|  media_min_likes  |                                          0                                         | Minimum number of likes a post will have for InstaBot to like it                                            |
-|   follow_in_day   |                                         50                                         | Number of users it will follow per day                                                                      |
-|      unfollow     |                                        true                                        | `true` or `false` whether you want to unfollow users                                                        |
-| follow_time_hours |                                          6                                         | Time (in hours) it will follow these users for                                                              |
-|  comments_in_day  |                                          0                                         | Number of comments it will leave per day                                                                    |
-|   comments_list   | \[["Cool", "Awesome", "Great"], ["😄", "🙌", "👍", "😊"], [".", "!", "!!", "!!!"]] | What words you want shuffled to post comments                                                               |
-|    bot_start_at   |                                        07:00                                       | Time when InstaBot will start                                                                               |
-|    bot_stop_at    |                                        23:00                                       | Time when InstaBot will stop                                                                                |
+|     Variables     |                                        Defaults                                       | Explanation                                                                                                  |
+| :---------------: | :-----------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------- |
+|      username     |                                        username                                       | Your Instagram username                                                                                      |
+|      password     |                                        password                                       | Your Instagram password                                                                                      |
+|      timezone     |                                           0                                           | Your timezone code, in order to run it at your local time                                                    |
+|        tags       |                                     input/tags.csv                                    | Tags file - alternatively you can use \['tag1', 'tag2', 'tag3',...]                                          |
+|   tags_to_avoid   |                                input/tags_to_avoid.csv                                | Tags to avoid file - you can also use \['tagx', 'tagy',...]                                                  |
+|      friends      |                                   input/friends.csv                                   | Friends file, containing usernames all in one column - alternatively you can use \['friend1', 'friend2',...] |
+|   like_news_feed  |                                          true                                         | `true` or `false` whether you want to like your friends' posts                                               |
+|    likes_in_day   |                                          500                                          | Number of likes InstaBot will do in a day                                                                    |
+|  media_max_likes  |                                           50                                          | Maximum number of likes a post will have for InstaBot to like it                                             |
+|  media_min_likes  |                                           0                                           | Minimum number of likes a post will have for InstaBot to like it                                             |
+|   follow_in_day   |                                           50                                          | Number of users it will follow per day                                                                       |
+|      unfollow     |                                          true                                         | `true` or `false` whether you want to unfollow users                                                         |
+| follow_time_hours |                                           6                                           | Time (in hours) it will follow these users for                                                               |
+|  comments_in_day  |                                           0                                           | Number of comments it will leave per day                                                                     |
+|   comments_list   | \[\["Cool", "Awesome", "Great"], \["😄", "🙌", "👍", "😊"], \[".", "!", "!!", "!!!"]] | What words you want shuffled to post comments                                                                |
+|    bot_start_at   |                                         07:00                                         | Time when InstaBot will start                                                                                |
+|    bot_stop_at    |                                         23:00                                         | Time when InstaBot will stop                                                                                 |
 
 ### Set likes
 
