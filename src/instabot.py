@@ -29,6 +29,7 @@ from time import sleep, time, mktime
 from random import random as aleatory, randint, choice
 from requests.exceptions import ConnectionError
 from operator import itemgetter
+import traceback
 
 from logger import Logger
 from src.miscellaneous import *
@@ -537,8 +538,15 @@ class InstaBot:
                 else:
                     exit('\nCheck you entered the correct details!\n')
 
+        except KeyError as e:
+            self.logger.log('\nERROR signing in, InstaBot probably failed to obtain Instagram\'s cookies')
+            self.logger.log(traceback.format_exc())
+            exit('\nApologies, I could not sign you in.\n')
+
         except Exception as e:
             self.logger.log('\nERROR while attempting sign in: %s\n' % e)
+            self.logger.log(traceback.format_exc())
+            exit('\nApologies, I could not sign you in.\n')
 
     def check_login(self):
         # checks if user is logged in
@@ -548,7 +556,7 @@ class InstaBot:
             if self.params['username'] in main_page.text:
                 return True
         except Exception as e:
-            self.logger.log('ERROR checking if logged in: %s' % (e))
+            self.logger.log('ERROR while checking if logged in: %s' % (e))
         return False
 
     def log_out(self):
@@ -655,6 +663,7 @@ class InstaBot:
 
         except Exception as e:
             self.logger.log('\nError cleaning up: %s' % (e))
+            self.logger.log(traceback.format_exc())
             if on_exit:
                 self.log_out()
 
@@ -754,6 +763,7 @@ class InstaBot:
 
             except Exception as e:
                 self.logger.log('Error: %s' % (e))
+                self.logger.log(traceback.format_exc())
 
             except KeyboardInterrupt:
                 self.clean_up(
