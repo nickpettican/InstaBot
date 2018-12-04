@@ -29,7 +29,7 @@ from time import sleep, time, mktime
 from random import random as aleatory, randint, choice
 from requests.exceptions import ConnectionError
 from operator import itemgetter
-import traceback
+import traceback, re
 
 from logger import Logger
 from src.miscellaneous import *
@@ -470,8 +470,10 @@ class InstaBot:
                 (self.params['username']))
             # extract cookies from Instagram main page
             extract = self.browser.get(self.insta_urls['domain'])
+            csrftoken = re.search(
+                '(?<=\"csrf_token\":\")\w+', extract.text).group(0)
             self.browser.headers.update(
-                {'X-CSRFToken': extract.cookies['csrftoken']})
+                {'X-CSRFToken': csrftoken})
             sleep(2)
             # extract csrf token from login requests post
             extract_login = self.browser.post(
