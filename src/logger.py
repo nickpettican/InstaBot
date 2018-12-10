@@ -68,7 +68,7 @@ class Logger:
                         log = log.replace('\n', '')
                         print '\n',
                     log = datetime.datetime.today().strftime(
-                        '[ %Y-%m-%d %H:%m:%s ] ') + log
+                        '[ %Y-%m-%d %H:%m:%S ] ') + log
                 print log,
 
                 self.new_line = False

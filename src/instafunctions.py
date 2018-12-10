@@ -30,25 +30,25 @@ import itertools
 
 
 def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
-    # refill the bucket - returns dict with
+    # refill the bucket - returns dict with modified bucket
 
     if mode == 'feed' and data:
-        for i in data:
-            bucket['codes'][i['media_id']] = i['url_code']
+        for _post in data:
+            bucket['codes'][_post['media_id']] = _post['url_code']
         # add feed posts to bucket
         if enabled['like_feed']:
-            bucket['feed']['like'].extend([[i['media_id'], i['username']] for i in data
-                                           if any(n.lower() == i['username'].lower() for n in friends)
-                                           if not user_id == i['user_id']
-                                           if not any(n == i['media_id'] for n in bucket['feed']['media_ids'])
-                                           if not any(n[0] == i['media_id'] for n in bucket['feed']['done'])
-                                           if not any(n in i['caption'] for n in tags_to_avoid)])
-            bucket['feed']['media_ids'].extend([i['media_id'] for i in data])
+            bucket['feed']['like'].extend([[_post['media_id'], _post['username']] for _post in data
+                                           if any(n.lower() == _post['username'].lower() for n in friends)
+                                           if not user_id == _post['user_id']
+                                           if not any(n == _post['media_id'] for n in bucket['feed']['media_ids'])
+                                           if not any(n[0] == _post['media_id'] for n in bucket['feed']['done'])
+                                           if not any(n in _post['caption'] for n in tags_to_avoid)])
+            bucket['feed']['media_ids'].extend([_post['media_id'] for _post in data])
     # add explored posts to bucket
     if mode == 'explore' and data['posts']:
-        for i in data['posts']:
-            bucket['codes'][i['media_id']] = i['url_code']
-            bucket['user_ids'][i['user_id']] = i['username']
+        for _post in data['posts']:
+            bucket['codes'][_post['media_id']] = _post['url_code']
+            bucket['user_ids'][_post['user_id']] = _post['username']
         # just to get the keys right
         tmp = [['like', 'media_id'], [
             'follow', 'user_id'], ['comment', 'media_id']]
@@ -56,9 +56,9 @@ def refill(user_id, data, bucket, friends, tags_to_avoid, enabled, mode):
         # check if posts obbey the rules
         for param in params:
             if param:
-                bucket[mode][param[0]].update([i[param[1]] for i in data['posts'] if not user_id == i['user_id']
-                                               if not any(i[param[1]] in n for n in bucket[mode]['done'][param[0]])
-                                               if not any(n in i['caption'] for n in tags_to_avoid)])
+                bucket[mode][param[0]].update([_post[param[1]] for _post in data['posts'] if not user_id == _post['user_id']
+                                               if not any(_post[param[1]] in n for n in bucket[mode]['done'][param[0]])
+                                               if not any(n in _post['caption'] for n in tags_to_avoid)])
     elif mode == 'explore' and not data['posts']:
         raise Exception('No posts found')
     return bucket
@@ -184,7 +184,7 @@ def news_feed_media(browser, url, user_id):
                 return [p for p in posts if p is not None]
     except Exception as e:
         print '\nError getting new feed data: %s.' % (e)
-    return False
+    return []
 
 
 def check_user(browser, url, user):
