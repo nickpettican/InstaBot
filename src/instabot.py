@@ -1081,8 +1081,8 @@ class InstaBot:
                 ) - datetime(1970, 1, 1)).total_seconds() + self.params['follow_time']])
         except Exception as e:
             raise Exception(
-                '\nin explore operation - debugging needed: %s' %
-                (e))
+                '\nin explore operation: %s - debugging needed: %s' %
+                (e, traceback.format_exc()))
         return result
 
     def like_feed(self):
