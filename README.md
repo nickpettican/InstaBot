@@ -201,7 +201,7 @@ The stats functionality is something I would also like to work on, but feel free
 
 -   Instagram does not like spam or bulk liking and following, so:
 
-> _Keep the likes per day bellow 1000 in a 24 hour period_, meaning if you use the bot for 12 hours a day, I would suggest only setting the likes to 500 or you might risk a ban. 
+> _Keep the likes per day below 1000 in a 24 hour period_, meaning if you use the bot for 12 hours a day, I would suggest only setting the likes to 500 or you might risk a ban. 
 
 -   Don't bulk unfollow: 
 
