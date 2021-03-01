@@ -1,3 +1,7 @@
+## This code is no longer maintained. [Bots are no longer safe](https://likeup.me/bots-are-dead/), you could easily get banned.
+
+Big thanks to everyone who got involved in this project, namely @erleiuat.
+
 <img src="http://www.nicolaspettican.com/css/img/instabot.png" title="Instabot logo" alt="Instabot logo" width="30%">
 
 # InstaBot 1.3.0
