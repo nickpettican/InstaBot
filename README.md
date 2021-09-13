@@ -7,6 +7,7 @@ Big thanks to everyone who got involved in this project, namely @erleiuat.
 # InstaBot 1.3.0
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4c7690e086f54631b169eaa2375d9c31)](https://www.codacy.com/app/nickpettican/InstaBot?utm_source=github.com&utm_medium=referral&utm_content=nickpettican/InstaBot&utm_campaign=Badge_Grade)
+[![Run on Repl.it](https://repl.it/badge/github/nickpettican/InstaBot)](https://repl.it/github/nickpettican/InstaBot)
 
 -   [InstaBot 1.3.0](#instabot-130)
     -   [Requirements](#requirements)
