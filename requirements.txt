@@ -9,7 +9,7 @@ certifi==2018.4.16
 cffi==1.11.5
 chardet==3.0.4
 configparser==3.5.0
-cryptography==2.3
+cryptography==3.2
 cryptography-vectors==2.3
 cycler==0.10.0
 decorator==4.3.0
