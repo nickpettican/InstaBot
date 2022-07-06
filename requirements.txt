@@ -36,7 +36,7 @@ jupyterthemes==0.19.6
 kiwisolver==1.0.1
 lazy-object-proxy==1.3.1
 lesscpy==0.13.0
-lxml==4.2.4
+lxml==4.9.1
 MarkupSafe==1.0
 matplotlib==2.2.3
 mccabe==0.6.1
